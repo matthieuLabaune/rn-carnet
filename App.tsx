@@ -8,7 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { initDatabase } from './services/database';
-import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { RootStackParamList, MainTabsParamList } from './navigation/types';
 import HomeScreen from './screens/HomeScreen';
 import ClassDetailScreen from './screens/ClassDetailScreen';
@@ -22,16 +22,18 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 function MainTabs() {
+    const { theme } = useTheme();
+    
     return (
         <Tab.Navigator
             screenOptions={{
                 headerShown: false,
-                tabBarActiveTintColor: '#000',
-                tabBarInactiveTintColor: '#999',
+                tabBarActiveTintColor: theme.text,
+                tabBarInactiveTintColor: theme.textTertiary,
                 tabBarStyle: {
-                    backgroundColor: '#ffffff',
+                    backgroundColor: theme.surface,
                     borderTopWidth: 1,
-                    borderTopColor: '#f0f0f0',
+                    borderTopColor: theme.border,
                     height: 60,
                     paddingBottom: 8,
                     paddingTop: 8,

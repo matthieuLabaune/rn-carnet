@@ -9,6 +9,7 @@ import { studentService, classService } from '../services';
 import { Student, Class } from '../types';
 import { HANDICAP_LABELS, LATERALITY_LABELS } from '../types/student';
 import StudentFormDialog from '../components/StudentFormDialog';
+import { useTheme } from '../contexts/ThemeContext';
 
 type StudentDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StudentDetail'>;
 type StudentDetailScreenRouteProp = RouteProp<RootStackParamList, 'StudentDetail'>;
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export default function StudentDetailScreen({ navigation, route }: Props) {
+    const { theme } = useTheme();
     const { studentId } = route.params;
     const [student, setStudent] = useState<Student | null>(null);
     const [classe, setClasse] = useState<Class | null>(null);
@@ -78,29 +80,29 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <MaterialCommunityIcons name="loading" size={32} color="#666" />
+            <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <MaterialCommunityIcons name="loading" size={32} color={theme.textSecondary} />
             </View>
         );
     }
 
     if (!student) {
         return (
-            <View style={styles.loadingContainer}>
-                <MaterialCommunityIcons name="account-off" size={64} color="#ddd" />
-                <Text style={styles.errorText}>Élève introuvable</Text>
+            <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <MaterialCommunityIcons name="account-off" size={64} color={theme.textTertiary} />
+                <Text style={[styles.errorText, { color: theme.textSecondary }]}>Élève introuvable</Text>
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <StatusBar barStyle={theme.statusBarStyle} />
 
             {/* Header */}
-            <View style={[styles.header, classe && { borderTopColor: classe.color }]}>
+            <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }, classe && { borderTopColor: classe.color }]}>
                 <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="#000" />
+                    <MaterialCommunityIcons name="arrow-left" size={24} color={theme.text} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Fiche élève</Text>
                 <View style={styles.headerActions}>
