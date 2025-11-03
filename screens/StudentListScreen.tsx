@@ -8,7 +8,6 @@ import { RootStackParamList } from '../navigation/types';
 import { studentService } from '../services';
 import { Student } from '../types';
 import StudentFormDialog from '../components/StudentFormDialog';
-import StudentTags from '../components/StudentTags';
 
 type StudentListScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StudentList'>;
 type StudentListScreenRouteProp = RouteProp<RootStackParamList, 'StudentList'>;
@@ -201,13 +200,6 @@ export default function StudentListScreen({ navigation, route }: Props) {
                                     <Text style={styles.studentName}>
                                         {student.firstName} {student.lastName}
                                     </Text>
-                                    <StudentTags
-                                        handicaps={student.handicaps}
-                                        laterality={student.laterality}
-                                        customTags={student.customTags}
-                                        compact
-                                        maxTags={3}
-                                    />
                                     {student.notes && (
                                         <Text style={styles.studentNotes} numberOfLines={2}>
                                             {student.notes}

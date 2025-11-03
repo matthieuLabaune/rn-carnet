@@ -6,7 +6,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { studentService, classService } from '../services';
 import { Student, Class } from '../types';
-import StudentTags from '../components/StudentTags';
 
 type AllStudentsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StudentDetail'>;
 
@@ -124,13 +123,6 @@ export default function AllStudentsScreen({ navigation }: Props) {
                             <Text style={styles.studentName}>
                                 {student.firstName} {student.lastName}
                             </Text>
-                            <StudentTags
-                                handicaps={student.handicaps}
-                                laterality={student.laterality}
-                                customTags={student.customTags}
-                                compact
-                                maxTags={2}
-                            />
                             <View style={styles.classTag}>
                                 <Text style={[styles.className, { color: getClassColor(student.classId) }]}>
                                     {getClassName(student.classId)}
