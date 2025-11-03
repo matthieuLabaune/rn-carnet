@@ -7,6 +7,7 @@ import { classService } from '../services';
 import { Class } from '../types';
 import { RootStackParamList } from '../navigation/types';
 import ClassFormDialog from '../components/ClassFormDialog';
+import { useTheme } from '../contexts/ThemeContext';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ClassDetail'>;
 
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function HomeScreen({ navigation }: Props) {
+    const { theme } = useTheme();
     const [classes, setClasses] = useState<Class[]>([]);
     const [loading, setLoading] = useState(true);
     const [showDialog, setShowDialog] = useState(false);
@@ -74,21 +76,21 @@ export default function HomeScreen({ navigation }: Props) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <View style={styles.loadingDot} />
+            <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <View style={[styles.loadingDot, { backgroundColor: theme.text }]} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <StatusBar barStyle={theme.statusBarStyle} />
 
-            <View style={styles.header}>
-                <MaterialCommunityIcons name="google-classroom" size={28} color="#000" />
+            <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                <MaterialCommunityIcons name="google-classroom" size={28} color={theme.text} />
                 <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>Mes Classes</Text>
-                    <Text style={styles.headerSubtitle}>
+                    <Text style={[styles.headerTitle, { color: theme.text }]}>Mes Classes</Text>
+                    <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
                         {classes.length} {classes.length > 1 ? 'classes' : 'classe'}
                     </Text>
                 </View>
@@ -96,14 +98,14 @@ export default function HomeScreen({ navigation }: Props) {
 
             {classes.length === 0 ? (
                 <Animated.View style={[styles.emptyContainer, { opacity: fadeAnim }]}>
-                    <View style={styles.emptyCard}>
-                        <MaterialCommunityIcons name="google-classroom" size={64} color="#ddd" />
-                        <Text style={styles.emptyTitle}>Commencez ici</Text>
-                        <Text style={styles.emptyText}>
+                    <View style={[styles.emptyCard, { backgroundColor: theme.cardBackground }]}>
+                        <MaterialCommunityIcons name="google-classroom" size={64} color={theme.textTertiary} />
+                        <Text style={[styles.emptyTitle, { color: theme.text }]}>Commencez ici</Text>
+                        <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
                             Créez votre première classe pour organiser vos élèves et séances
                         </Text>
                         <TouchableOpacity
-                            style={styles.emptyButton}
+                            style={[styles.emptyButton, { backgroundColor: theme.primary }]}
                             onPress={handleCreateClass}
                         >
                             <Text style={styles.emptyButtonText}>Créer une classe</Text>
@@ -119,14 +121,14 @@ export default function HomeScreen({ navigation }: Props) {
                         showsVerticalScrollIndicator={false}
                         renderItem={({ item }) => (
                             <TouchableOpacity
-                                style={styles.classCard}
+                                style={[styles.classCard, { backgroundColor: theme.cardBackground }]}
                                 activeOpacity={0.7}
                                 onPress={() => handleClassPress(item)}
                             >
                                 <View style={[styles.colorBar, { backgroundColor: item.color }]} />
                                 <View style={styles.classContent}>
                                     <View style={styles.classHeader}>
-                                        <Text style={styles.className}>{item.name}</Text>
+                                        <Text style={[styles.className, { color: theme.text }]}>{item.name}</Text>
                                         <View style={[styles.badge, { backgroundColor: item.color + '15' }]}>
                                             <Text style={[styles.badgeText, { color: item.color }]}>
                                                 {item.studentCount || 0}
@@ -134,11 +136,11 @@ export default function HomeScreen({ navigation }: Props) {
                                         </View>
                                     </View>
                                     <View style={styles.classDetails}>
-                                        <Text style={styles.classLevel}>{item.level}</Text>
+                                        <Text style={[styles.classLevel, { color: theme.textSecondary }]}>{item.level}</Text>
                                         {item.subject && (
                                             <>
-                                                <View style={styles.dot} />
-                                                <Text style={styles.classSubject}>{item.subject}</Text>
+                                                <View style={[styles.dot, { backgroundColor: theme.border }]} />
+                                                <Text style={[styles.classSubject, { color: theme.textSecondary }]}>{item.subject}</Text>
                                             </>
                                         )}
                                     </View>
@@ -150,7 +152,7 @@ export default function HomeScreen({ navigation }: Props) {
             )}
 
             <TouchableOpacity
-                style={styles.fab}
+                style={[styles.fab, { backgroundColor: theme.primary }]}
                 onPress={handleCreateClass}
                 activeOpacity={0.8}
             >

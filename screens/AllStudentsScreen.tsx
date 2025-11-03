@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
 import { studentService, classService } from '../services';
 import { Student, Class } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 type AllStudentsScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StudentDetail'>;
 
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function AllStudentsScreen({ navigation }: Props) {
+    const { theme } = useTheme();
     const [students, setStudents] = useState<Student[]>([]);
     const [classes, setClasses] = useState<Class[]>([]);
     const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
@@ -72,34 +74,34 @@ export default function AllStudentsScreen({ navigation }: Props) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <MaterialCommunityIcons name="loading" size={32} color="#666" />
+            <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <MaterialCommunityIcons name="loading" size={32} color={theme.textSecondary} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <StatusBar barStyle={theme.statusBarStyle} />
 
-            <View style={styles.header}>
-                <MaterialCommunityIcons name="account-group" size={28} color="#000" />
+            <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                <MaterialCommunityIcons name="account-group" size={28} color={theme.text} />
                 <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>Tous les élèves</Text>
-                    <Text style={styles.headerSubtitle}>
+                    <Text style={[styles.headerTitle, { color: theme.text }]}>Tous les élèves</Text>
+                    <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
                         {students.length} élève{students.length !== 1 ? 's' : ''} · {classes.length} classe{classes.length !== 1 ? 's' : ''}
                     </Text>
                 </View>
             </View>
 
-            <View style={styles.searchContainer}>
-                <MaterialCommunityIcons name="magnify" size={20} color="#666" style={styles.searchIcon} />
+            <View style={[styles.searchContainer, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                <MaterialCommunityIcons name="magnify" size={20} color={theme.textSecondary} style={styles.searchIcon} />
                 <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, { backgroundColor: theme.inputBackground, color: theme.text }]}
                     value={searchQuery}
+                    placeholderTextColor={theme.textPlaceholder}
                     onChangeText={setSearchQuery}
                     placeholder="Rechercher un élève..."
-                    placeholderTextColor="#999"
                     autoCapitalize="none"
                 />
                 {searchQuery.length > 0 && (
@@ -107,7 +109,7 @@ export default function AllStudentsScreen({ navigation }: Props) {
                         style={styles.clearButton}
                         onPress={() => setSearchQuery('')}
                     >
-                        <MaterialCommunityIcons name="close-circle" size={20} color="#999" />
+                        <MaterialCommunityIcons name="close-circle" size={20} color={theme.textTertiary} />
                     </TouchableOpacity>
                 )}
             </View>
@@ -116,11 +118,11 @@ export default function AllStudentsScreen({ navigation }: Props) {
                 {filteredStudents.map((student) => (
                     <TouchableOpacity
                         key={student.id}
-                        style={styles.studentCard}
+                        style={[styles.studentCard, { backgroundColor: theme.cardBackground }]}
                         onPress={() => navigation.navigate('StudentDetail', { studentId: student.id })}
                     >
                         <View style={styles.studentInfo}>
-                            <Text style={styles.studentName}>
+                            <Text style={[styles.studentName, { color: theme.text }]}>
                                 {student.firstName} {student.lastName}
                             </Text>
                             <View style={styles.classTag}>
@@ -132,7 +134,7 @@ export default function AllStudentsScreen({ navigation }: Props) {
                         <MaterialCommunityIcons
                             name="chevron-right"
                             size={24}
-                            color="#999"
+                            color={theme.textTertiary}
                         />
                     </TouchableOpacity>
                 ))}

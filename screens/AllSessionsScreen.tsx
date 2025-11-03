@@ -4,8 +4,10 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { sessionService, classService } from '../services';
 import { Session, Class } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function AllSessionsScreen() {
+    const { theme } = useTheme();
     const [sessions, setSessions] = useState<Session[]>([]);
     const [classes, setClasses] = useState<Class[]>([]);
     const [loading, setLoading] = useState(true);
