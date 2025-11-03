@@ -1,0 +1,336 @@
+import React, { useState, useEffect } from 'react';
+import { View, FlatList, StyleSheet, TouchableOpacity, StatusBar, Animated } from 'react-native';
+import { Text, FAB } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { classService } from '../services';
+import { Class } from '../types';
+import { RootStackParamList } from '../navigation/types';
+import ClassFormDialog from '../components/ClassFormDialog';
+
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ClassDetail'>;
+
+interface Props {
+    navigation: HomeScreenNavigationProp;
+}
+
+export default function HomeScreen({ navigation }: Props) {
+    const [classes, setClasses] = useState<Class[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showDialog, setShowDialog] = useState(false);
+    const fadeAnim = new Animated.Value(0);
+
+    useEffect(() => {
+        loadClasses();
+    }, []);
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            loadClasses();
+        });
+        return unsubscribe;
+    }, [navigation]);
+
+    useEffect(() => {
+        if (!loading) {
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 400,
+                useNativeDriver: true,
+            }).start();
+        }
+    }, [loading]);
+
+    const loadClasses = async () => {
+        try {
+            const data = await classService.getAll();
+            setClasses(data);
+        } catch (error) {
+            console.error('Error:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCreateClass = () => setShowDialog(true);
+
+    const handleSubmitClass = async (data: { name: string; level: string; subject: string; color: string }) => {
+        try {
+            await classService.create(data);
+            setShowDialog(false);
+            loadClasses();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+
+    const handleClassPress = (item: Class) => {
+        navigation.navigate('ClassDetail', {
+            classId: item.id,
+            className: item.name,
+            classColor: item.color,
+        });
+    };
+
+    if (loading) {
+        return (
+            <View style={styles.loadingContainer}>
+                <View style={styles.loadingDot} />
+            </View>
+        );
+    }
+
+    return (
+        <View style={styles.container}>
+            <StatusBar barStyle="dark-content" />
+
+            <View style={styles.header}>
+                <MaterialCommunityIcons name="google-classroom" size={28} color="#000" />
+                <View style={styles.headerContent}>
+                    <Text style={styles.headerTitle}>Mes Classes</Text>
+                    <Text style={styles.headerSubtitle}>
+                        {classes.length} {classes.length > 1 ? 'classes' : 'classe'}
+                    </Text>
+                </View>
+            </View>
+
+            {classes.length === 0 ? (
+                <Animated.View style={[styles.emptyContainer, { opacity: fadeAnim }]}>
+                    <View style={styles.emptyCard}>
+                        <MaterialCommunityIcons name="google-classroom" size={64} color="#ddd" />
+                        <Text style={styles.emptyTitle}>Commencez ici</Text>
+                        <Text style={styles.emptyText}>
+                            Créez votre première classe pour organiser vos élèves et séances
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.emptyButton}
+                            onPress={handleCreateClass}
+                        >
+                            <Text style={styles.emptyButtonText}>Créer une classe</Text>
+                        </TouchableOpacity>
+                    </View>
+                </Animated.View>
+            ) : (
+                <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+                    <FlatList
+                        data={classes}
+                        keyExtractor={(item) => item.id}
+                        contentContainerStyle={styles.listContent}
+                        showsVerticalScrollIndicator={false}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.classCard}
+                                activeOpacity={0.7}
+                                onPress={() => handleClassPress(item)}
+                            >
+                                <View style={[styles.colorBar, { backgroundColor: item.color }]} />
+                                <View style={styles.classContent}>
+                                    <View style={styles.classHeader}>
+                                        <Text style={styles.className}>{item.name}</Text>
+                                        <View style={[styles.badge, { backgroundColor: item.color + '15' }]}>
+                                            <Text style={[styles.badgeText, { color: item.color }]}>
+                                                {item.studentCount || 0}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={styles.classDetails}>
+                                        <Text style={styles.classLevel}>{item.level}</Text>
+                                        {item.subject && (
+                                            <>
+                                                <View style={styles.dot} />
+                                                <Text style={styles.classSubject}>{item.subject}</Text>
+                                            </>
+                                        )}
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                    />
+                </Animated.View>
+            )}
+
+            <TouchableOpacity
+                style={styles.fab}
+                onPress={handleCreateClass}
+                activeOpacity={0.8}
+            >
+                <MaterialCommunityIcons name="plus" size={28} color="#ffffff" />
+            </TouchableOpacity>
+
+            <ClassFormDialog
+                visible={showDialog}
+                onDismiss={() => setShowDialog(false)}
+                onSubmit={handleSubmitClass}
+            />
+        </View>
+    );
+}
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#fafafa',
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+    },
+    loadingDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#000',
+    },
+    header: {
+        paddingHorizontal: 24,
+        paddingTop: 60,
+        paddingBottom: 24,
+        backgroundColor: '#ffffff',
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#f0f0f0',
+    },
+    headerContent: {
+        marginLeft: 16,
+        flex: 1,
+    },
+    headerTitle: {
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#000',
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: '#666',
+        marginTop: 4,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 32,
+    },
+    emptyCard: {
+        backgroundColor: '#ffffff',
+        borderRadius: 16,
+        padding: 32,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: '600',
+        color: '#000',
+        marginTop: 16,
+        marginBottom: 8,
+    },
+    emptyText: {
+        fontSize: 15,
+        color: '#666',
+        textAlign: 'center',
+        lineHeight: 22,
+        marginBottom: 20,
+    },
+    emptyButton: {
+        backgroundColor: '#000',
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 8,
+    },
+    emptyButtonText: {
+        color: '#ffffff',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    listContent: {
+        padding: 16,
+        paddingBottom: 100,
+    },
+    classCard: {
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        marginBottom: 12,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+    colorBar: {
+        height: 4,
+        width: '100%',
+    },
+    classContent: {
+        padding: 16,
+    },
+    classHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    className: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#000',
+        flex: 1,
+    },
+    badge: {
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginLeft: 12,
+    },
+    badgeText: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    classDetails: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    classLevel: {
+        fontSize: 14,
+        color: '#666',
+    },
+    dot: {
+        width: 3,
+        height: 3,
+        borderRadius: 1.5,
+        backgroundColor: '#ccc',
+        marginHorizontal: 8,
+    },
+    classSubject: {
+        fontSize: 14,
+        color: '#666',
+    },
+    fab: {
+        position: 'absolute',
+        right: 24,
+        bottom: 24,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: '#000',
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    fabText: {
+        fontSize: 28,
+        color: '#fff',
+        fontWeight: '300',
+    },
+});
