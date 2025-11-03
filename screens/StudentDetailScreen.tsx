@@ -7,8 +7,8 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
 import { studentService, classService } from '../services';
 import { Student, Class } from '../types';
+import { HANDICAP_LABELS, LATERALITY_LABELS } from '../types/student';
 import StudentFormDialog from '../components/StudentFormDialog';
-import StudentTags from '../components/StudentTags';
 
 type StudentDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StudentDetail'>;
 type StudentDetailScreenRouteProp = RouteProp<RootStackParamList, 'StudentDetail'>;
@@ -141,11 +141,52 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
                     <View style={styles.section}>
                         <Text style={styles.sectionTitle}>Informations</Text>
                         <View style={styles.card}>
-                            <StudentTags
-                                handicaps={student.handicaps}
-                                laterality={student.laterality}
-                                customTags={student.customTags}
-                            />
+                            {/* Laterality */}
+                            {student.laterality && (
+                                <View style={styles.infoRow}>
+                                    <View style={styles.infoLabel}>
+                                        <MaterialCommunityIcons name="human" size={20} color="#666" />
+                                        <Text style={styles.infoLabelText}>Latéralité</Text>
+                                    </View>
+                                    <Text style={styles.infoValue}>
+                                        {LATERALITY_LABELS[student.laterality]}
+                                    </Text>
+                                </View>
+                            )}
+
+                            {/* Handicaps */}
+                            {student.handicaps && student.handicaps.length > 0 && (
+                                <View style={styles.infoRow}>
+                                    <View style={styles.infoLabel}>
+                                        <MaterialCommunityIcons name="account-heart" size={20} color="#666" />
+                                        <Text style={styles.infoLabelText}>Besoins particuliers</Text>
+                                    </View>
+                                    <View style={styles.tagsContainer}>
+                                        {student.handicaps.map((handicap) => (
+                                            <View key={handicap} style={styles.tag}>
+                                                <Text style={styles.tagText}>{HANDICAP_LABELS[handicap]}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                </View>
+                            )}
+
+                            {/* Custom Tags */}
+                            {student.customTags && student.customTags.length > 0 && (
+                                <View style={styles.infoRow}>
+                                    <View style={styles.infoLabel}>
+                                        <MaterialCommunityIcons name="tag-multiple" size={20} color="#666" />
+                                        <Text style={styles.infoLabelText}>Tags</Text>
+                                    </View>
+                                    <View style={styles.tagsContainer}>
+                                        {student.customTags.map((tag) => (
+                                            <View key={tag} style={[styles.tag, styles.customTag]}>
+                                                <Text style={styles.tagText}>{tag}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                </View>
+                            )}
                         </View>
                     </View>
                 ) : null}
