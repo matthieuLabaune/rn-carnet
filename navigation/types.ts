@@ -1,0 +1,18 @@
+import { Class } from '../types';
+
+export type RootStackParamList = {
+  MainTabs: undefined;
+  ClassDetail: { classId: string; className: string; classColor: string };
+  StudentList: { classId: string; className: string; classColor: string };
+  StudentDetail: { studentId: string };
+  SessionList: { classId: string };
+  SessionDetail: { sessionId: string };
+};
+
+export type MainTabsParamList = {
+  Home: undefined;
+  Students: undefined;
+  Classes: undefined;
+  Sessions: undefined;
+  Settings: undefined;
+};
