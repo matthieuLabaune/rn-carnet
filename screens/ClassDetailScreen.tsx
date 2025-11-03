@@ -8,6 +8,7 @@ import { studentService, sessionService } from '../services';
 import { Student, Session } from '../types';
 import StudentFormDialog from '../components/StudentFormDialog';
 import SessionFormDialog from '../components/SessionFormDialog';
+import { useTheme } from '../contexts/ThemeContext';
 
 type ClassDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ClassDetail'>;
 type ClassDetailScreenRouteProp = RouteProp<RootStackParamList, 'ClassDetail'>;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function ClassDetailScreen({ navigation, route }: Props) {
+    const { theme } = useTheme();
     const { classId, className, classColor } = route.params;
     const [students, setStudents] = useState<Student[]>([]);
     const [sessions, setSessions] = useState<Session[]>([]);
@@ -84,37 +86,37 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <View style={styles.loadingDot} />
+            <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <View style={[styles.loadingDot, { backgroundColor: theme.text }]} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <StatusBar barStyle={theme.statusBarStyle} />
 
-            <View style={[styles.header, { borderTopColor: classColor }]}>
+            <View style={[styles.header, { backgroundColor: theme.surface, borderTopColor: classColor, borderBottomColor: theme.border }]}>
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >
-                    <Text style={styles.backText}>←</Text>
+                    <Text style={[styles.backText, { color: theme.text }]}>←</Text>
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>{className}</Text>
+                <Text style={[styles.headerTitle, { color: theme.text }]}>{className}</Text>
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Students Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
-                        <Text style={styles.sectionTitle}>Élèves</Text>
-                        <Text style={styles.sectionCount}>{students.length}</Text>
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Élèves</Text>
+                        <Text style={[styles.sectionCount, { color: theme.textTertiary, backgroundColor: theme.surfaceVariant }]}>{students.length}</Text>
                     </View>
 
                     {students.length === 0 ? (
-                        <View style={styles.emptyCard}>
-                            <Text style={styles.emptyText}>Aucun élève pour le moment</Text>
+                        <View style={[styles.emptyCard, { backgroundColor: theme.cardBackground }]}>
+                            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Aucun élève pour le moment</Text>
                             <TouchableOpacity
                                 style={[styles.addButton, { backgroundColor: classColor }]}
                                 onPress={() => setShowStudentDialog(true)}
@@ -127,10 +129,10 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                             {students.slice(0, 3).map((student) => (
                                 <TouchableOpacity
                                     key={student.id}
-                                    style={styles.itemCard}
+                                    style={[styles.itemCard, { backgroundColor: theme.cardBackground }]}
                                     onPress={() => navigation.navigate('StudentDetail', { studentId: student.id })}
                                 >
-                                    <Text style={styles.itemName}>
+                                    <Text style={[styles.itemName, { color: theme.text }]}>
                                         {student.firstName} {student.lastName}
                                     </Text>
                                 </TouchableOpacity>

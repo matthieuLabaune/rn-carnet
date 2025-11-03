@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/types';
 import { studentService } from '../services';
 import { Student } from '../types';
 import StudentFormDialog from '../components/StudentFormDialog';
+import { useTheme } from '../contexts/ThemeContext';
 
 type StudentListScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StudentList'>;
 type StudentListScreenRouteProp = RouteProp<RootStackParamList, 'StudentList'>;
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function StudentListScreen({ navigation, route }: Props) {
+    const { theme } = useTheme();
     const { classId, className, classColor } = route.params;
     const [students, setStudents] = useState<Student[]>([]);
     const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
@@ -125,22 +127,22 @@ export default function StudentListScreen({ navigation, route }: Props) {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <View style={styles.loadingDot} />
+            <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <View style={[styles.loadingDot, { backgroundColor: theme.text }]} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <StatusBar barStyle={theme.statusBarStyle} />
 
-            <View style={styles.header}>
+            <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >
-                    <MaterialCommunityIcons name="arrow-left" size={24} color="#000" />
+                    <MaterialCommunityIcons name="arrow-left" size={24} color={theme.text} />
                 </TouchableOpacity>
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>{className}</Text>

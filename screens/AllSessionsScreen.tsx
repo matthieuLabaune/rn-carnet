@@ -70,21 +70,21 @@ export default function AllSessionsScreen() {
 
     if (loading) {
         return (
-            <View style={styles.loadingContainer}>
-                <MaterialCommunityIcons name="loading" size={32} color="#666" />
+            <View style={[styles.loadingContainer, { backgroundColor: theme.background }]}>
+                <MaterialCommunityIcons name="loading" size={32} color={theme.textSecondary} />
             </View>
         );
     }
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <StatusBar barStyle={theme.statusBarStyle} />
 
-            <View style={styles.header}>
-                <MaterialCommunityIcons name="calendar-text" size={28} color="#000" />
+            <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                <MaterialCommunityIcons name="calendar-text" size={28} color={theme.text} />
                 <View style={styles.headerContent}>
-                    <Text style={styles.headerTitle}>Toutes les séances</Text>
-                    <Text style={styles.headerSubtitle}>
+                    <Text style={[styles.headerTitle, { color: theme.text }]}>Toutes les séances</Text>
+                    <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
                         {sessions.length} séance{sessions.length !== 1 ? 's' : ''}
                     </Text>
                 </View>
@@ -93,19 +93,19 @@ export default function AllSessionsScreen() {
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {sessions.length === 0 ? (
                     <View style={styles.emptyContainer}>
-                        <MaterialCommunityIcons name="calendar-blank" size={64} color="#ddd" />
-                        <Text style={styles.emptyTitle}>Aucune séance</Text>
-                        <Text style={styles.emptyText}>
+                        <MaterialCommunityIcons name="calendar-blank" size={64} color={theme.textTertiary} />
+                        <Text style={[styles.emptyTitle, { color: theme.text }]}>Aucune séance</Text>
+                        <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
                             Créez des séances depuis vos classes
                         </Text>
                     </View>
                 ) : (
                     <View style={styles.list}>
                         {sessions.map((session) => (
-                            <TouchableOpacity key={session.id} style={styles.sessionCard}>
+                            <TouchableOpacity key={session.id} style={[styles.sessionCard, { backgroundColor: theme.cardBackground }]}>
                                 <View style={styles.sessionHeader}>
                                     <View style={styles.sessionTitleRow}>
-                                        <Text style={styles.sessionSubject}>{session.subject}</Text>
+                                        <Text style={[styles.sessionSubject, { color: theme.text }]}>{session.subject}</Text>
                                         <View style={[styles.statusBadge, getStatusStyle(session.status)]}>
                                             <Text style={[styles.statusText, { color: getStatusStyle(session.status).color }]}>
                                                 {getStatusLabel(session.status)}
@@ -113,7 +113,7 @@ export default function AllSessionsScreen() {
                                         </View>
                                     </View>
                                     {session.description && (
-                                        <Text style={styles.sessionDescription} numberOfLines={2}>
+                                        <Text style={[styles.sessionDescription, { color: theme.textSecondary }]} numberOfLines={2}>
                                             {session.description}
                                         </Text>
                                     )}
@@ -122,11 +122,11 @@ export default function AllSessionsScreen() {
                                 <View style={styles.sessionFooter}>
                                     <View style={styles.classTag}>
                                         <View style={[styles.classColorDot, { backgroundColor: getClassColor(session.classId) }]} />
-                                        <Text style={styles.className}>{getClassName(session.classId)}</Text>
+                                        <Text style={[styles.className, { color: theme.textSecondary }]}>{getClassName(session.classId)}</Text>
                                     </View>
                                     <View style={styles.dateInfo}>
-                                        <MaterialCommunityIcons name="clock-outline" size={14} color="#999" />
-                                        <Text style={styles.dateText}>
+                                        <MaterialCommunityIcons name="clock-outline" size={14} color={theme.textTertiary} />
+                                        <Text style={[styles.dateText, { color: theme.textSecondary }]}>
                                             {new Date(session.date).toLocaleDateString('fr-FR', {
                                                 day: 'numeric',
                                                 month: 'short',
