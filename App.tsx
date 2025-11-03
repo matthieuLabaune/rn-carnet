@@ -8,6 +8,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { initDatabase } from './services/database';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { RootStackParamList, MainTabsParamList } from './navigation/types';
 import HomeScreen from './screens/HomeScreen';
 import ClassDetailScreen from './screens/ClassDetailScreen';
@@ -107,38 +108,40 @@ export default function App() {
     }
 
     return (
-        <PaperProvider>
-            <SafeAreaProvider>
-                <NavigationContainer>
-                    <Stack.Navigator
-                        screenOptions={{
-                            headerShown: false,
-                        }}
-                    >
-                        <Stack.Screen
-                            name="MainTabs"
-                            component={MainTabs}
-                            options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                            name="ClassDetail"
-                            component={ClassDetailScreen}
-                            options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                            name="StudentList"
-                            component={StudentListScreen}
-                            options={{ headerShown: false }}
-                        />
-                        <Stack.Screen
-                            name="StudentDetail"
-                            component={StudentDetailScreen}
-                            options={{ headerShown: false }}
-                        />
-                    </Stack.Navigator>
-                </NavigationContainer>
-            </SafeAreaProvider>
-        </PaperProvider>
+        <ThemeProvider>
+            <PaperProvider>
+                <SafeAreaProvider>
+                    <NavigationContainer>
+                        <Stack.Navigator
+                            screenOptions={{
+                                headerShown: false,
+                            }}
+                        >
+                            <Stack.Screen
+                                name="MainTabs"
+                                component={MainTabs}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="ClassDetail"
+                                component={ClassDetailScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="StudentList"
+                                component={StudentListScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="StudentDetail"
+                                component={StudentDetailScreen}
+                                options={{ headerShown: false }}
+                            />
+                        </Stack.Navigator>
+                    </NavigationContainer>
+                </SafeAreaProvider>
+            </PaperProvider>
+        </ThemeProvider>
     );
 }
 

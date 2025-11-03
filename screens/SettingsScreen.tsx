@@ -2,9 +2,10 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import { Text, Switch } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function SettingsScreen() {
-    const [darkMode, setDarkMode] = React.useState(false);
+    const { theme, themeMode, setThemeMode, isDark } = useTheme();
     const [notifications, setNotifications] = React.useState(true);
 
     const handleExportData = () => {
@@ -35,41 +36,46 @@ export default function SettingsScreen() {
     };
 
     return (
-        <View style={styles.container}>
-            <StatusBar barStyle="dark-content" />
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
+            <StatusBar barStyle={theme.statusBarStyle} />
 
-            <View style={styles.header}>
-                <MaterialCommunityIcons name="cog" size={28} color="#000" />
-                <Text style={styles.headerTitle}>Paramètres</Text>
+            <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+                <MaterialCommunityIcons name="cog" size={28} color={theme.text} />
+                <Text style={[styles.headerTitle, { color: theme.text }]}>Paramètres</Text>
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {/* Apparence */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Apparence</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Apparence</Text>
 
-                    <View style={styles.settingRow}>
+                    <View style={[styles.settingRow, { backgroundColor: theme.cardBackground }]}>
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons name="theme-light-dark" size={24} color="#666" style={styles.settingIcon} />
+                            <MaterialCommunityIcons name="theme-light-dark" size={24} color={theme.textSecondary} style={styles.settingIcon} />
                             <View>
-                                <Text style={styles.settingLabel}>Mode sombre</Text>
-                                <Text style={styles.settingDescription}>Activer le thème sombre</Text>
+                                <Text style={[styles.settingLabel, { color: theme.text }]}>Mode sombre</Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>
+                                    {themeMode === 'system' ? 'Automatique' : themeMode === 'dark' ? 'Activé' : 'Désactivé'}
+                                </Text>
                             </View>
                         </View>
-                        <Switch value={darkMode} onValueChange={setDarkMode} />
+                        <Switch
+                            value={themeMode === 'dark'}
+                            onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}
+                        />
                     </View>
                 </View>
 
                 {/* Notifications */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Notifications</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Notifications</Text>
 
-                    <View style={styles.settingRow}>
+                    <View style={[styles.settingRow, { backgroundColor: theme.cardBackground }]}>
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons name="bell" size={24} color="#666" style={styles.settingIcon} />
+                            <MaterialCommunityIcons name="bell" size={24} color={theme.textSecondary} style={styles.settingIcon} />
                             <View>
-                                <Text style={styles.settingLabel}>Rappels de séances</Text>
-                                <Text style={styles.settingDescription}>Recevoir des notifications</Text>
+                                <Text style={[styles.settingLabel, { color: theme.text }]}>Rappels de séances</Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>Recevoir des notifications</Text>
                             </View>
                         </View>
                         <Switch value={notifications} onValueChange={setNotifications} />
