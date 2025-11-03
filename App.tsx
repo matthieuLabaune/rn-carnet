@@ -21,138 +21,138 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 function MainTabs() {
-  return (
-    <Tab.Navigator
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: '#000',
-        tabBarInactiveTintColor: '#999',
-        tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopWidth: 1,
-          borderTopColor: '#f0f0f0',
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-        },
-      }}
-    >
-      <Tab.Screen
-        name="Classes"
-        component={HomeScreen}
-        options={{
-          tabBarLabel: 'Classes',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="google-classroom" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Students"
-        component={AllStudentsScreen}
-        options={{
-          tabBarLabel: 'Élèves',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-group" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Sessions"
-        component={AllSessionsScreen}
-        options={{
-          tabBarLabel: 'Séances',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="calendar-text" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarLabel: 'Réglages',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cog" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
-  );
+    return (
+        <Tab.Navigator
+            screenOptions={{
+                headerShown: false,
+                tabBarActiveTintColor: '#000',
+                tabBarInactiveTintColor: '#999',
+                tabBarStyle: {
+                    backgroundColor: '#ffffff',
+                    borderTopWidth: 1,
+                    borderTopColor: '#f0f0f0',
+                    height: 60,
+                    paddingBottom: 8,
+                    paddingTop: 8,
+                },
+                tabBarLabelStyle: {
+                    fontSize: 12,
+                    fontWeight: '600',
+                },
+            }}
+        >
+            <Tab.Screen
+                name="Classes"
+                component={HomeScreen}
+                options={{
+                    tabBarLabel: 'Classes',
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="google-classroom" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Students"
+                component={AllStudentsScreen}
+                options={{
+                    tabBarLabel: 'Élèves',
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="account-group" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Sessions"
+                component={AllSessionsScreen}
+                options={{
+                    tabBarLabel: 'Séances',
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="calendar-text" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Settings"
+                component={SettingsScreen}
+                options={{
+                    tabBarLabel: 'Réglages',
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="cog" size={size} color={color} />
+                    ),
+                }}
+            />
+        </Tab.Navigator>
+    );
 }
 
 export default function App() {
-  const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    initDatabase()
-      .then(() => setLoading(false))
-      .catch(console.error);
-  }, []);
+    useEffect(() => {
+        initDatabase()
+            .then(() => setLoading(false))
+            .catch(console.error);
+    }, []);
 
-  if (loading) {
+    if (loading) {
+        return (
+            <PaperProvider>
+                <SafeAreaProvider>
+                    <View style={styles.loadingContainer}>
+                        <View style={styles.loadingDot} />
+                    </View>
+                </SafeAreaProvider>
+            </PaperProvider>
+        );
+    }
+
     return (
-      <PaperProvider>
-        <SafeAreaProvider>
-          <View style={styles.loadingContainer}>
-            <View style={styles.loadingDot} />
-          </View>
-        </SafeAreaProvider>
-      </PaperProvider>
+        <PaperProvider>
+            <SafeAreaProvider>
+                <NavigationContainer>
+                    <Stack.Navigator
+                        screenOptions={{
+                            headerShown: false,
+                        }}
+                    >
+                        <Stack.Screen
+                            name="MainTabs"
+                            component={MainTabs}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="ClassDetail"
+                            component={ClassDetailScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="StudentList"
+                            component={StudentListScreen}
+                            options={{ headerShown: false }}
+                        />
+                        <Stack.Screen
+                            name="StudentDetail"
+                            component={StudentDetailScreen}
+                            options={{ headerShown: false }}
+                        />
+                    </Stack.Navigator>
+                </NavigationContainer>
+            </SafeAreaProvider>
+        </PaperProvider>
     );
-  }
-
-  return (
-    <PaperProvider>
-      <SafeAreaProvider>
-        <NavigationContainer>
-          <Stack.Navigator
-            screenOptions={{
-              headerShown: false,
-            }}
-          >
-            <Stack.Screen 
-              name="MainTabs" 
-              component={MainTabs}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen 
-              name="ClassDetail" 
-              component={ClassDetailScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen 
-              name="StudentList" 
-              component={StudentListScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen 
-              name="StudentDetail" 
-              component={StudentDetailScreen}
-              options={{ headerShown: false }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      </SafeAreaProvider>
-    </PaperProvider>
-  );
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-  },
-  loadingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#000',
-  },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+    },
+    loadingDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#000',
+    },
 });

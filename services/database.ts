@@ -5,12 +5,12 @@ const DATABASE_NAME = 'rn_carnet.db';
 let db: SQLite.SQLiteDatabase | null = null;
 
 export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
-  if (db) return db;
+    if (db) return db;
 
-  db = await SQLite.openDatabaseAsync(DATABASE_NAME);
+    db = await SQLite.openDatabaseAsync(DATABASE_NAME);
 
-  // Créer les tables
-  await db.execAsync(`
+    // Créer les tables
+    await db.execAsync(`
     PRAGMA journal_mode = WAL;
     PRAGMA foreign_keys = ON;
 
@@ -58,42 +58,42 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
     CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
   `);
 
-  // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
-  try {
-    await db.execAsync(`
+    // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
+    try {
+        await db.execAsync(`
       ALTER TABLE students ADD COLUMN handicaps TEXT;
       ALTER TABLE students ADD COLUMN laterality TEXT;
       ALTER TABLE students ADD COLUMN custom_tags TEXT;
       ALTER TABLE students ADD COLUMN photo_url TEXT;
     `);
-  } catch (error) {
-    // Les colonnes existent déjà, ignorer l'erreur
-  }
+    } catch (error) {
+        // Les colonnes existent déjà, ignorer l'erreur
+    }
 
-  return db;
+    return db;
 };
 
 export const getDatabase = (): SQLite.SQLiteDatabase => {
-  if (!db) {
-    throw new Error('Database not initialized. Call initDatabase() first.');
-  }
-  return db;
+    if (!db) {
+        throw new Error('Database not initialized. Call initDatabase() first.');
+    }
+    return db;
 };
 
 export const closeDatabase = async (): Promise<void> => {
-  if (db) {
-    await db.closeAsync();
-    db = null;
-  }
+    if (db) {
+        await db.closeAsync();
+        db = null;
+    }
 };
 
 export const resetDatabase = async (): Promise<void> => {
-  const database = getDatabase();
-  await database.execAsync(`
+    const database = getDatabase();
+    await database.execAsync(`
     DROP TABLE IF EXISTS sessions;
     DROP TABLE IF EXISTS students;
     DROP TABLE IF EXISTS classes;
   `);
-  await closeDatabase();
-  await initDatabase();
+    await closeDatabase();
+    await initDatabase();
 };
