@@ -296,9 +296,9 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         const allCompetences = await competenceService.getAll();
         console.log(`📊 Total competences in DB: ${allCompetences.length}`);
         
-        const mathCompetences = allCompetences.filter(c => c.domaine === 'mathematiques').slice(0, 3);
-        const frenchCompetences = allCompetences.filter(c => c.domaine === 'francais').slice(0, 3);
-        const scienceCompetences = allCompetences.filter(c => c.domaine === 'sciences').slice(0, 2);
+        const mathCompetences = allCompetences.filter(c => c.domaine === 'Mathématiques').slice(0, 3);
+        const frenchCompetences = allCompetences.filter(c => c.domaine === 'Français').slice(0, 3);
+        const scienceCompetences = allCompetences.filter(c => c.domaine === 'Sciences').slice(0, 2);
 
         console.log(`📐 Math competences: ${mathCompetences.length} - IDs: ${mathCompetences.map(c => c.id).join(', ')}`);
         console.log(`📝 French competences: ${frenchCompetences.length} - IDs: ${frenchCompetences.map(c => c.id).join(', ')}`);
