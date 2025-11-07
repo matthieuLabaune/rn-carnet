@@ -232,6 +232,11 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                         label: 'Créer une séance',
                         onPress: () => setShowSessionDialog(true),
                     },
+                    {
+                        icon: 'clipboard-text',
+                        label: 'Évaluations',
+                        onPress: () => navigation.navigate('EvaluationsList', { classId }),
+                    },
                 ]}
             />
 
