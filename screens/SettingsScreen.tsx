@@ -3,10 +3,54 @@ import { View, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Alert } from
 import { Text, Switch } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { seedDatabase, TeacherType } from '../utils/seedData';
 
 export default function SettingsScreen() {
     const { theme, themeMode, setThemeMode, isDark } = useTheme();
     const [notifications, setNotifications] = React.useState(true);
+    const [isSeeding, setIsSeeding] = React.useState(false);
+
+    const handleSeedData = () => {
+        Alert.alert(
+            'Générer des données de test',
+            'Choisissez le type d\'enseignant pour générer des classes et données adaptées :',
+            [
+                { 
+                    text: 'Annuler', 
+                    style: 'cancel' 
+                },
+                {
+                    text: '👨‍🏫 Primaire',
+                    onPress: () => generateSeedData('primary'),
+                },
+                {
+                    text: '🎓 Secondaire',
+                    onPress: () => generateSeedData('secondary'),
+                },
+            ]
+        );
+    };
+
+    const generateSeedData = async (teacherType: TeacherType) => {
+        setIsSeeding(true);
+        try {
+            await seedDatabase(teacherType);
+            Alert.alert(
+                'Succès',
+                `Données de test générées avec succès pour ${teacherType === 'primary' ? 'le primaire' : 'le secondaire'} !`,
+                [{ text: 'OK' }]
+            );
+        } catch (error) {
+            console.error('Error seeding database:', error);
+            Alert.alert(
+                'Erreur',
+                'Une erreur est survenue lors de la génération des données',
+                [{ text: 'OK' }]
+            );
+        } finally {
+            setIsSeeding(false);
+        }
+    };
 
     const handleExportData = () => {
         Alert.alert(
@@ -84,36 +128,60 @@ export default function SettingsScreen() {
 
                 {/* Données */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Données</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Données</Text>
 
-                    <TouchableOpacity style={styles.settingRow} onPress={handleExportData}>
+                    <TouchableOpacity 
+                        style={[styles.settingRow, { backgroundColor: theme.cardBackground }]} 
+                        onPress={handleSeedData}
+                        disabled={isSeeding}
+                    >
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons name="export" size={24} color="#666" style={styles.settingIcon} />
+                            <MaterialCommunityIcons 
+                                name="database-plus" 
+                                size={24} 
+                                color={isSeeding ? theme.textTertiary : theme.primary} 
+                                style={styles.settingIcon} 
+                            />
                             <View>
-                                <Text style={styles.settingLabel}>Exporter</Text>
-                                <Text style={styles.settingDescription}>Sauvegarder vos données</Text>
+                                <Text style={[styles.settingLabel, { color: theme.text }]}>
+                                    {isSeeding ? 'Génération en cours...' : 'Générer données de test'}
+                                </Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>
+                                    Créer classes, élèves et séances
+                                </Text>
                             </View>
                         </View>
-                        <MaterialCommunityIcons name="chevron-right" size={24} color="#999" />
+                        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.textSecondary} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.settingRow} onPress={handleImportData}>
+                    <TouchableOpacity style={[styles.settingRow, { backgroundColor: theme.cardBackground }]} onPress={handleExportData}>
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons name="import" size={24} color="#666" style={styles.settingIcon} />
+                            <MaterialCommunityIcons name="export" size={24} color={theme.textSecondary} style={styles.settingIcon} />
                             <View>
-                                <Text style={styles.settingLabel}>Importer</Text>
-                                <Text style={styles.settingDescription}>Restaurer vos données</Text>
+                                <Text style={[styles.settingLabel, { color: theme.text }]}>Exporter</Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>Sauvegarder vos données</Text>
                             </View>
                         </View>
-                        <MaterialCommunityIcons name="chevron-right" size={24} color="#999" />
+                        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.textSecondary} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={[styles.settingRow, styles.dangerRow]} onPress={handleClearData}>
+                    <TouchableOpacity style={[styles.settingRow, { backgroundColor: theme.cardBackground }]} onPress={handleImportData}>
+                        <View style={styles.settingInfo}>
+                            <MaterialCommunityIcons name="import" size={24} color={theme.textSecondary} style={styles.settingIcon} />
+                            <View>
+                                <Text style={[styles.settingLabel, { color: theme.text }]}>Importer</Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>Restaurer vos données</Text>
+                            </View>
+                        </View>
+                        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.textSecondary} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={[styles.settingRow, { backgroundColor: theme.cardBackground }, styles.dangerRow]} onPress={handleClearData}>
                         <View style={styles.settingInfo}>
                             <MaterialCommunityIcons name="delete-forever" size={24} color="#DC2626" style={styles.settingIcon} />
                             <View>
                                 <Text style={[styles.settingLabel, styles.dangerText]}>Effacer toutes les données</Text>
-                                <Text style={styles.settingDescription}>Action irréversible</Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>Action irréversible</Text>
                             </View>
                         </View>
                         <MaterialCommunityIcons name="chevron-right" size={24} color="#DC2626" />
@@ -122,22 +190,22 @@ export default function SettingsScreen() {
 
                 {/* À propos */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>À propos</Text>
+                    <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>À propos</Text>
 
-                    <View style={styles.settingRow}>
+                    <View style={[styles.settingRow, { backgroundColor: theme.cardBackground }]}>
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons name="information" size={24} color="#666" style={styles.settingIcon} />
+                            <MaterialCommunityIcons name="information" size={24} color={theme.textSecondary} style={styles.settingIcon} />
                             <View>
-                                <Text style={styles.settingLabel}>Version</Text>
-                                <Text style={styles.settingDescription}>1.0.0</Text>
+                                <Text style={[styles.settingLabel, { color: theme.text }]}>Version</Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>1.0.0</Text>
                             </View>
                         </View>
                     </View>
                 </View>
 
                 <View style={styles.footer}>
-                    <Text style={styles.footerText}>RN-Carnet © 2025</Text>
-                    <Text style={styles.footerSubtext}>Assistant pédagogique pour enseignants</Text>
+                    <Text style={[styles.footerText, { color: theme.textSecondary }]}>RN-Carnet © 2025</Text>
+                    <Text style={[styles.footerSubtext, { color: theme.textTertiary }]}>Assistant pédagogique pour enseignants</Text>
                 </View>
             </ScrollView>
         </View>
