@@ -12,7 +12,7 @@ import {
   StatusBar,
   Alert,
 } from 'react-native';
-import { Text, FAB, Chip, Menu } from 'react-native-paper';
+import { Text, FAB, Menu } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -211,31 +211,22 @@ export default function EvaluationsListScreen() {
         </View>
 
         <View style={styles.evaluationBadges}>
-          <Chip
-            mode="outlined"
-            compact
-            textStyle={styles.chipText}
-            style={styles.chip}
-          >
-            {EVALUATION_TYPE_LABELS[item.type]}
-          </Chip>
-          <Chip
-            mode="outlined"
-            compact
-            textStyle={styles.chipText}
-            style={styles.chip}
-          >
-            {item.notationSystem === 'niveaux' ? 'Par niveaux' : `Sur ${item.maxPoints}`}
-          </Chip>
+          <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+            <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+              {EVALUATION_TYPE_LABELS[item.type]}
+            </Text>
+          </View>
+          <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+            <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+              {item.notationSystem === 'niveaux' ? 'Par niveaux' : `Sur ${item.maxPoints}`}
+            </Text>
+          </View>
           {item.isHomework && (
-            <Chip
-              mode="outlined"
-              compact
-              textStyle={styles.chipText}
-              style={[styles.chip, { borderColor: theme.primary }]}
-            >
-              DM
-            </Chip>
+            <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant, borderColor: theme.primary, borderWidth: 1 }]}>
+              <Text style={[styles.evaluationBadgeText, { color: theme.primary }]}>
+                DM
+              </Text>
+            </View>
           )}
         </View>
 
@@ -244,11 +235,11 @@ export default function EvaluationsListScreen() {
             <View style={styles.competencesRow}>
               <MaterialCommunityIcons 
                 name="star-box-multiple" 
-                size={16} 
-                color={theme.textSecondary} 
+                size={14} 
+                color={theme.textTertiary} 
                 style={{ marginRight: 6 }}
               />
-              <Text style={[styles.competencesCount, { color: theme.textSecondary }]}>
+              <Text style={[styles.competencesCount, { color: theme.textTertiary }]}>
                 {competences.length} compétence{competences.length > 1 ? 's' : ''}
               </Text>
             </View>
@@ -461,6 +452,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
     marginBottom: 12,
+  },
+  evaluationBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  evaluationBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   chip: {
     height: 28,
