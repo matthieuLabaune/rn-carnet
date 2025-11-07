@@ -540,6 +540,6 @@ interface ExerciseResult {
 
 ---
 
-**Version:** 1.0.0-MVP  
-**Dernière mise à jour:** 2025-11-07  
+**Version:** 1.0.0-MVP
+**Dernière mise à jour:** 2025-11-07
 **Auteur:** Matt

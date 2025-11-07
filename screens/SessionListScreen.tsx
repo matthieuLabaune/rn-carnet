@@ -41,9 +41,9 @@ export default function SessionListScreen({ navigation, route }: Props) {
                 classService.getById(classId),
                 sessionService.getByClass(classId),
             ]);
-            
+
             setClassData(classInfo);
-            
+
             // Trier par date décroissante
             sessionsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             setSessions(sessionsData);
@@ -103,7 +103,7 @@ export default function SessionListScreen({ navigation, route }: Props) {
 
             {/* Header */}
             <View style={[styles.header, { backgroundColor: classData.color }]}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >
@@ -129,8 +129,8 @@ export default function SessionListScreen({ navigation, route }: Props) {
                 ) : (
                     <View style={styles.list}>
                         {sessions.map((session) => (
-                            <TouchableOpacity 
-                                key={session.id} 
+                            <TouchableOpacity
+                                key={session.id}
                                 style={[styles.sessionCard, { backgroundColor: theme.surface }]}
                                 onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
                             >

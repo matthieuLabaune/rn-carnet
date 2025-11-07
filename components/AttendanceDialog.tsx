@@ -68,11 +68,11 @@ export default function AttendanceDialog({
             prev.map(att =>
                 att.studentId === studentId
                     ? {
-                          ...att,
-                          present: !att.present,
-                          late: att.present ? false : att.late, // Reset late if becoming absent
-                          lateMinutes: att.present ? undefined : att.lateMinutes,
-                      }
+                        ...att,
+                        present: !att.present,
+                        late: att.present ? false : att.late, // Reset late if becoming absent
+                        lateMinutes: att.present ? undefined : att.lateMinutes,
+                    }
                     : att
             )
         );
@@ -83,10 +83,10 @@ export default function AttendanceDialog({
             prev.map(att =>
                 att.studentId === studentId && att.present
                     ? {
-                          ...att,
-                          late: !att.late,
-                          lateMinutes: !att.late ? 5 : undefined,
-                      }
+                        ...att,
+                        late: !att.late,
+                        lateMinutes: !att.late ? 5 : undefined,
+                    }
                     : att
             )
         );
@@ -280,16 +280,16 @@ export default function AttendanceDialog({
                                                     onValueChange={() => handleToggleLate(attendance.studentId)}
                                                     color="#FF9800"
                                                 />
-                                                <MaterialCommunityIcons 
-                                                    name="clock-alert" 
-                                                    size={20} 
+                                                <MaterialCommunityIcons
+                                                    name="clock-alert"
+                                                    size={20}
                                                     color={attendance.late ? '#FF9800' : theme.textSecondary}
                                                 />
                                                 <Text style={[styles.switchLabel, { color: theme.text }]}>
                                                     En retard
                                                 </Text>
                                             </View>
-                                            
+
                                             {attendance.late && (
                                                 <View style={styles.minutesInput}>
                                                     <Text style={[styles.minutesLabel, { color: theme.textSecondary }]}>

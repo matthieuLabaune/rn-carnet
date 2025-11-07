@@ -49,7 +49,7 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
 
                 // Charger les présences
                 const attendancesData = await attendanceService.getByStudent(studentId);
-                
+
                 // Enrichir avec les infos de séance
                 const enrichedAttendances = await Promise.all(
                     attendancesData.map(async (att) => {
@@ -59,7 +59,7 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
                 );
 
                 // Trier par date décroissante
-                enrichedAttendances.sort((a, b) => 
+                enrichedAttendances.sort((a, b) =>
                     new Date(b.session.date).getTime() - new Date(a.session.date).getTime()
                 );
 
@@ -236,7 +236,7 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
                 {/* Historique des présences */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Historique des présences</Text>
-                    
+
                     {/* Statistiques */}
                     <View style={[styles.card, { marginBottom: 12 }]}>
                         <View style={styles.statsGrid}>
@@ -284,24 +284,24 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
                                     key={attendance.id}
                                     style={[
                                         styles.attendanceItem,
-                                        index < attendances.length - 1 && { 
+                                        index < attendances.length - 1 && {
                                             borderBottomWidth: 1,
-                                            borderBottomColor: theme.border 
+                                            borderBottomColor: theme.border
                                         }
                                     ]}
                                 >
                                     <View style={styles.attendanceIcon}>
                                         {attendance.present ? (
-                                            <MaterialCommunityIcons 
-                                                name="check-circle" 
-                                                size={24} 
-                                                color="#4CAF50" 
+                                            <MaterialCommunityIcons
+                                                name="check-circle"
+                                                size={24}
+                                                color="#4CAF50"
                                             />
                                         ) : (
-                                            <MaterialCommunityIcons 
-                                                name="close-circle" 
-                                                size={24} 
-                                                color="#F44336" 
+                                            <MaterialCommunityIcons
+                                                name="close-circle"
+                                                size={24}
+                                                color="#F44336"
                                             />
                                         )}
                                     </View>
@@ -320,10 +320,10 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
                                             {attendance.late && (
                                                 <>
                                                     <Text style={[styles.attendanceSeparator, { color: theme.textTertiary }]}>•</Text>
-                                                    <MaterialCommunityIcons 
-                                                        name="clock-alert" 
-                                                        size={14} 
-                                                        color="#FF9800" 
+                                                    <MaterialCommunityIcons
+                                                        name="clock-alert"
+                                                        size={14}
+                                                        color="#FF9800"
                                                     />
                                                     <Text style={[styles.attendanceLate, { color: '#FF9800' }]}>
                                                         {attendance.lateMinutes} min

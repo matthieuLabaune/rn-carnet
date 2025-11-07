@@ -108,8 +108,8 @@ export default function AllSessionsScreen() {
                 ) : (
                     <View style={styles.list}>
                         {sessions.map((session) => (
-                            <TouchableOpacity 
-                                key={session.id} 
+                            <TouchableOpacity
+                                key={session.id}
                                 style={[styles.sessionCard, { backgroundColor: theme.cardBackground }]}
                                 onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
                             >

@@ -137,7 +137,7 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
 
             // Enregistrer en batch
             await attendanceService.upsertBulk(attendancesToSave);
-            
+
             setShowAttendanceDialog(false);
             await loadData(); // Recharger les données
             Alert.alert('Succès', 'Présences enregistrées');
@@ -178,10 +178,10 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
             <StatusBar barStyle={theme.statusBarStyle} />
-            
+
             {/* Header */}
             <View style={[styles.header, { backgroundColor: classData.color }]}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >
@@ -208,7 +208,7 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
                                 })}
                             </Text>
                         </View>
-                        
+
                         <View style={styles.infoRow}>
                             <MaterialCommunityIcons name="clock-outline" size={20} color={theme.textSecondary} />
                             <Text style={[styles.infoText, { color: theme.text }]}>
@@ -218,7 +218,7 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
 
                         <View style={styles.infoRow}>
                             <MaterialCommunityIcons name="information-outline" size={20} color={theme.textSecondary} />
-                            <Chip 
+                            <Chip
                                 mode="flat"
                                 style={[styles.statusChip, { backgroundColor: statusColor + '20' }]}
                                 textStyle={{ color: statusColor, fontSize: 12 }}
@@ -242,7 +242,7 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
                 <Card style={[styles.card, { backgroundColor: theme.surface }]}>
                     <Card.Content>
                         <Text style={[styles.sectionTitle, { color: theme.text }]}>Présences</Text>
-                        
+
                         <View style={styles.statsRow}>
                             <View style={styles.statItem}>
                                 <Text style={[styles.statValue, { color: '#4CAF50' }]}>{stats.present}</Text>
@@ -264,14 +264,14 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
 
                         {stats.recorded > 0 && (
                             <View style={[styles.progressBar, { backgroundColor: theme.background }]}>
-                                <View 
+                                <View
                                     style={[
                                         styles.progressFill,
-                                        { 
+                                        {
                                             width: `${(stats.present / stats.total) * 100}%`,
                                             backgroundColor: '#4CAF50'
                                         }
-                                    ]} 
+                                    ]}
                                 />
                             </View>
                         )}
@@ -365,32 +365,32 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
                                             <>
                                                 {attendance.attendance.present ? (
                                                     <>
-                                                        <MaterialCommunityIcons 
-                                                            name="check-circle" 
-                                                            size={24} 
-                                                            color="#4CAF50" 
+                                                        <MaterialCommunityIcons
+                                                            name="check-circle"
+                                                            size={24}
+                                                            color="#4CAF50"
                                                         />
                                                         {attendance.attendance.late && (
-                                                            <MaterialCommunityIcons 
-                                                                name="clock-alert" 
-                                                                size={20} 
+                                                            <MaterialCommunityIcons
+                                                                name="clock-alert"
+                                                                size={20}
                                                                 color="#FF9800"
                                                                 style={{ marginLeft: 4 }}
                                                             />
                                                         )}
                                                     </>
                                                 ) : (
-                                                    <MaterialCommunityIcons 
-                                                        name="close-circle" 
-                                                        size={24} 
-                                                        color="#F44336" 
+                                                    <MaterialCommunityIcons
+                                                        name="close-circle"
+                                                        size={24}
+                                                        color="#F44336"
                                                     />
                                                 )}
                                             </>
                                         ) : (
-                                            <MaterialCommunityIcons 
-                                                name="help-circle-outline" 
-                                                size={24} 
+                                            <MaterialCommunityIcons
+                                                name="help-circle-outline"
+                                                size={24}
                                                 color={theme.textSecondary}
                                             />
                                         )}

@@ -158,13 +158,13 @@ const generateAttendancesForSession = async (sessionId: string, studentIds: stri
     const attendances = studentIds.map(studentId => {
         // 85% de chance d'être présent
         const present = randomBool(0.85);
-        
+
         // Si présent, 15% de chance d'être en retard
         const late = present && randomBool(0.15);
-        
+
         // Si en retard, entre 5 et 30 minutes
         const lateMinutes = late ? randomInt(5, 30) : undefined;
-        
+
         // 10% de chance d'avoir une note (justificatif, etc.)
         const notes = randomBool(0.1) ? randomItem([
             'Justificatif médical',
@@ -191,7 +191,7 @@ const generateAttendancesForSession = async (sessionId: string, studentIds: stri
 export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
     try {
         console.log('🌱 Starting database seed...');
-        
+
         // Choisir les configurations selon le type d'enseignant
         const CLASS_CONFIGS = teacherType === 'primary' ? PRIMARY_CLASS_CONFIGS : SECONDARY_CLASS_CONFIGS;
         const SUBJECTS = teacherType === 'primary' ? PRIMARY_SUBJECTS : SECONDARY_SUBJECTS;
@@ -209,18 +209,18 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         console.log('👨‍🎓 Creating students...');
         let totalStudents = 0;
         const classStudentsMap = new Map<string, string[]>();
-        
+
         for (const classId of classIds) {
             const numStudents = randomInt(15, 25);
             const studentIds: string[] = [];
-            
+
             for (let i = 0; i < numStudents; i++) {
                 const studentData = generateStudent(classId);
                 const newStudent = await studentService.create(studentData);
                 studentIds.push(newStudent.id);
                 totalStudents++;
             }
-            
+
             classStudentsMap.set(classId, studentIds);
             console.log(`  ✓ Created ${numStudents} students for class ${classId}`);
         }
@@ -229,7 +229,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         console.log('📅 Creating sessions...');
         let totalSessions = 0;
         const completedSessions: Array<{ id: string; classId: string; date: string }> = [];
-        
+
         for (const classId of classIds) {
             // Séances passées (derniers 30 jours)
             for (let day = 30; day > 0; day -= randomInt(2, 4)) {
@@ -255,7 +255,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         // 4. Générer les présences pour les séances passées
         console.log('✅ Generating attendances...');
         let totalAttendances = 0;
-        
+
         for (const session of completedSessions) {
             const studentIds = classStudentsMap.get(session.classId) || [];
             const attendances = await generateAttendancesForSession(
@@ -263,7 +263,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
                 studentIds,
                 session.date
             );
-            
+
             await attendanceService.upsertBulk(attendances);
             totalAttendances += attendances.length;
         }
@@ -271,10 +271,10 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
 
         // 5️⃣ Seed Competences
         console.log('\n5️⃣ Seeding competences...');
-        
+
         // Check if competences already exist
         const existingCompetences = await competenceService.getAll();
-        
+
         if (existingCompetences.length === 0) {
             // Only insert if no competences exist
             const predefinedCompetences = getAllPredefinedCompetences();
@@ -295,7 +295,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         // Get some competence IDs for evaluations
         const allCompetences = await competenceService.getAll();
         console.log(`📊 Total competences in DB: ${allCompetences.length}`);
-        
+
         const mathCompetences = allCompetences.filter(c => c.domaine === 'Mathématiques').slice(0, 3);
         const frenchCompetences = allCompetences.filter(c => c.domaine === 'Français').slice(0, 3);
         const scienceCompetences = allCompetences.filter(c => c.domaine === 'Sciences').slice(0, 2);
@@ -318,7 +318,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
             const classSessions = await sessionService.getByClass(classId);
 
             // Create 3 evaluations per class
-            
+
             // 1. Math evaluation (points) - linked to a session if available
             const mathEvalId = `eval_${Date.now()}_math_${classId}`;
             const mathEval = await evaluationService.create({

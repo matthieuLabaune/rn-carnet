@@ -15,8 +15,8 @@ interface SpeedDialFABProps {
     iconColor?: string;
 }
 
-export default function SpeedDialFAB({ 
-    actions, 
+export default function SpeedDialFAB({
+    actions,
     backgroundColor = '#667EEA',
     iconColor = '#ffffff'
 }: SpeedDialFABProps) {
@@ -53,7 +53,7 @@ export default function SpeedDialFAB({
                     onPress={toggleMenu}
                 />
             )}
-            
+
             {/* Action buttons */}
             {actions.map((action, index) => {
                 const translateY = animation.interpolate({
@@ -88,10 +88,10 @@ export default function SpeedDialFAB({
                             onPress={() => handleActionPress(action)}
                             activeOpacity={0.8}
                         >
-                            <MaterialCommunityIcons 
-                                name={action.icon} 
-                                size={24} 
-                                color={iconColor} 
+                            <MaterialCommunityIcons
+                                name={action.icon}
+                                size={24}
+                                color={iconColor}
                             />
                         </TouchableOpacity>
                     </Animated.View>

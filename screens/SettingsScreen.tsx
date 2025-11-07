@@ -22,9 +22,9 @@ export default function SettingsScreen() {
             'Générer des données de test',
             'Choisissez le type d\'enseignant pour générer des classes et données adaptées :',
             [
-                { 
-                    text: 'Annuler', 
-                    style: 'cancel' 
+                {
+                    text: 'Annuler',
+                    style: 'cancel'
                 },
                 {
                     text: '👨‍🏫 Primaire',
@@ -81,9 +81,9 @@ export default function SettingsScreen() {
             'Cette action est irréversible. Voulez-vous continuer ?',
             [
                 { text: 'Annuler', style: 'cancel' },
-                { 
-                    text: 'Effacer', 
-                    style: 'destructive', 
+                {
+                    text: 'Effacer',
+                    style: 'destructive',
                     onPress: async () => {
                         try {
                             await resetDatabase();
@@ -91,7 +91,7 @@ export default function SettingsScreen() {
                                 'Succès',
                                 'Toutes les données ont été effacées. L\'application va redémarrer.',
                                 [
-                                    { 
+                                    {
                                         text: 'OK',
                                         onPress: () => {
                                             // Navigate to home to refresh
@@ -152,16 +152,16 @@ export default function SettingsScreen() {
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Pédagogie</Text>
 
-                    <TouchableOpacity 
-                        style={[styles.settingRow, { backgroundColor: theme.cardBackground }]} 
+                    <TouchableOpacity
+                        style={[styles.settingRow, { backgroundColor: theme.cardBackground }]}
                         onPress={() => navigation.navigate('CompetencesManagement')}
                     >
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons 
-                                name="star-box-multiple" 
-                                size={24} 
-                                color={theme.primary} 
-                                style={styles.settingIcon} 
+                            <MaterialCommunityIcons
+                                name="star-box-multiple"
+                                size={24}
+                                color={theme.primary}
+                                style={styles.settingIcon}
                             />
                             <View>
                                 <Text style={[styles.settingLabel, { color: theme.text }]}>
@@ -196,17 +196,17 @@ export default function SettingsScreen() {
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Données</Text>
 
-                    <TouchableOpacity 
-                        style={[styles.settingRow, { backgroundColor: theme.cardBackground }]} 
+                    <TouchableOpacity
+                        style={[styles.settingRow, { backgroundColor: theme.cardBackground }]}
                         onPress={handleSeedData}
                         disabled={isSeeding}
                     >
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons 
-                                name="database-plus" 
-                                size={24} 
-                                color={isSeeding ? theme.textTertiary : theme.primary} 
-                                style={styles.settingIcon} 
+                            <MaterialCommunityIcons
+                                name="database-plus"
+                                size={24}
+                                color={isSeeding ? theme.textTertiary : theme.primary}
+                                style={styles.settingIcon}
                             />
                             <View>
                                 <Text style={[styles.settingLabel, { color: theme.text }]}>

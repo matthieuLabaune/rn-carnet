@@ -9,9 +9,9 @@ interface CustomFABProps {
     iconColor?: string;
 }
 
-export default function CustomFAB({ 
-    icon = 'plus', 
-    onPress, 
+export default function CustomFAB({
+    icon = 'plus',
+    onPress,
     backgroundColor = '#667EEA',
     iconColor = '#ffffff'
 }: CustomFABProps) {

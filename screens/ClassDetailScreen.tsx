@@ -209,7 +209,7 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                 </TouchableOpacity>
                             ))}
                             {sessions.length > 3 && (
-                                <TouchableOpacity 
+                                <TouchableOpacity
                                     style={styles.viewAllButton}
                                     onPress={() => navigation.navigate('SessionList', { classId })}
                                 >
@@ -277,9 +277,9 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                                     }}
                                                     style={[styles.linkIconButton, { backgroundColor: theme.surfaceVariant }]}
                                                 >
-                                                    <MaterialCommunityIcons 
-                                                        name="link-variant" 
-                                                        size={18} 
+                                                    <MaterialCommunityIcons
+                                                        name="link-variant"
+                                                        size={18}
                                                         color={theme.primary}
                                                     />
                                                 </TouchableOpacity>
@@ -306,9 +306,9 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                         </View>
                                         <View style={styles.evaluationFooter}>
                                             <View style={styles.evaluationCompetences}>
-                                                <MaterialCommunityIcons 
-                                                    name="star-box-multiple" 
-                                                    size={14} 
+                                                <MaterialCommunityIcons
+                                                    name="star-box-multiple"
+                                                    size={14}
                                                     color={theme.textTertiary}
                                                 />
                                                 <Text style={[styles.evaluationCompetencesText, { color: theme.textTertiary }]}>
