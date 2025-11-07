@@ -96,16 +96,16 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
 
     return (
         <View style={[styles.container, { backgroundColor: theme.background }]}>
-            <StatusBar barStyle={theme.statusBarStyle} />
+            <StatusBar barStyle="light-content" />
 
-            <View style={[styles.header, { backgroundColor: theme.surface, borderTopColor: classColor, borderBottomColor: theme.border }]}>
+            <View style={[styles.header, { backgroundColor: classColor }]}>
                 <TouchableOpacity
                     style={styles.backButton}
                     onPress={() => navigation.goBack()}
                 >
-                    <Text style={[styles.backText, { color: theme.text }]}>←</Text>
+                    <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: theme.text }]}>{className}</Text>
+                <Text style={styles.headerTitle}>{className}</Text>
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -290,29 +290,29 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
     },
     header: {
-        paddingHorizontal: 24,
+        paddingHorizontal: 16,
         paddingTop: 60,
         paddingBottom: 20,
-        backgroundColor: '#ffffff',
-        borderTopWidth: 4,
         flexDirection: 'row',
         alignItems: 'center',
     },
     backButton: {
-        marginRight: 16,
-        width: 32,
-        height: 32,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
         justifyContent: 'center',
         alignItems: 'center',
+        marginRight: 12,
     },
     backText: {
         fontSize: 28,
-        color: '#000',
+        color: '#FFFFFF',
     },
     headerTitle: {
         fontSize: 24,
-        fontWeight: '700',
-        color: '#000',
+        fontWeight: 'bold',
+        color: '#FFFFFF',
         flex: 1,
     },
     content: {
