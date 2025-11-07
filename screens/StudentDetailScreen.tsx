@@ -5,8 +5,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-import { studentService, classService } from '../services';
-import { Student, Class } from '../types';
+import { studentService, classService, attendanceService, sessionService } from '../services';
+import { Student, Class, Attendance, Session } from '../types';
 import { HANDICAP_LABELS, LATERALITY_LABELS } from '../types/student';
 import StudentFormDialog from '../components/StudentFormDialog';
 import { useTheme } from '../contexts/ThemeContext';
@@ -26,6 +26,14 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
     const [classe, setClasse] = useState<Class | null>(null);
     const [loading, setLoading] = useState(true);
     const [showEditDialog, setShowEditDialog] = useState(false);
+    const [attendances, setAttendances] = useState<(Attendance & { session: Session })[]>([]);
+    const [attendanceStats, setAttendanceStats] = useState({
+        totalSessions: 0,
+        presentCount: 0,
+        absentCount: 0,
+        lateCount: 0,
+        attendanceRate: 0,
+    });
 
     useEffect(() => {
         loadStudent();
@@ -38,6 +46,28 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
                 setStudent(studentData);
                 const classData = await classService.getById(studentData.classId);
                 setClasse(classData);
+
+                // Charger les présences
+                const attendancesData = await attendanceService.getByStudent(studentId);
+                
+                // Enrichir avec les infos de séance
+                const enrichedAttendances = await Promise.all(
+                    attendancesData.map(async (att) => {
+                        const session = await sessionService.getById(att.sessionId);
+                        return { ...att, session: session! };
+                    })
+                );
+
+                // Trier par date décroissante
+                enrichedAttendances.sort((a, b) => 
+                    new Date(b.session.date).getTime() - new Date(a.session.date).getTime()
+                );
+
+                setAttendances(enrichedAttendances);
+
+                // Calculer les statistiques
+                const stats = await attendanceService.getStudentStats(studentId);
+                setAttendanceStats(stats);
             }
         } catch (error) {
             console.error('Error loading student:', error);
@@ -203,13 +233,128 @@ export default function StudentDetailScreen({ navigation, route }: Props) {
                     </View>
                 )}
 
+                {/* Historique des présences */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Historique des présences</Text>
+                    
+                    {/* Statistiques */}
+                    <View style={[styles.card, { marginBottom: 12 }]}>
+                        <View style={styles.statsGrid}>
+                            <View style={styles.statBox}>
+                                <Text style={[styles.statValue, { color: '#4CAF50' }]}>
+                                    {attendanceStats.attendanceRate.toFixed(0)}%
+                                </Text>
+                                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Taux</Text>
+                            </View>
+                            <View style={styles.statBox}>
+                                <Text style={[styles.statValue, { color: '#4CAF50' }]}>
+                                    {attendanceStats.presentCount}
+                                </Text>
+                                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Présent(e)</Text>
+                            </View>
+                            <View style={styles.statBox}>
+                                <Text style={[styles.statValue, { color: '#F44336' }]}>
+                                    {attendanceStats.absentCount}
+                                </Text>
+                                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Absent(e)</Text>
+                            </View>
+                            <View style={styles.statBox}>
+                                <Text style={[styles.statValue, { color: '#FF9800' }]}>
+                                    {attendanceStats.lateCount}
+                                </Text>
+                                <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Retards</Text>
+                            </View>
+                        </View>
+                    </View>
+
+                    {/* Liste des présences */}
+                    {attendances.length === 0 ? (
+                        <View style={styles.card}>
+                            <View style={styles.placeholderContainer}>
+                                <MaterialCommunityIcons name="calendar-clock" size={48} color={theme.textTertiary} />
+                                <Text style={[styles.placeholderText, { color: theme.textSecondary }]}>
+                                    Aucune présence enregistrée
+                                </Text>
+                            </View>
+                        </View>
+                    ) : (
+                        <View style={styles.card}>
+                            {attendances.slice(0, 10).map((attendance, index) => (
+                                <View
+                                    key={attendance.id}
+                                    style={[
+                                        styles.attendanceItem,
+                                        index < attendances.length - 1 && { 
+                                            borderBottomWidth: 1,
+                                            borderBottomColor: theme.border 
+                                        }
+                                    ]}
+                                >
+                                    <View style={styles.attendanceIcon}>
+                                        {attendance.present ? (
+                                            <MaterialCommunityIcons 
+                                                name="check-circle" 
+                                                size={24} 
+                                                color="#4CAF50" 
+                                            />
+                                        ) : (
+                                            <MaterialCommunityIcons 
+                                                name="close-circle" 
+                                                size={24} 
+                                                color="#F44336" 
+                                            />
+                                        )}
+                                    </View>
+                                    <View style={styles.attendanceInfo}>
+                                        <Text style={[styles.attendanceSubject, { color: theme.text }]}>
+                                            {attendance.session.subject}
+                                        </Text>
+                                        <View style={styles.attendanceDetails}>
+                                            <Text style={[styles.attendanceDate, { color: theme.textSecondary }]}>
+                                                {new Date(attendance.session.date).toLocaleDateString('fr-FR', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                })}
+                                            </Text>
+                                            {attendance.late && (
+                                                <>
+                                                    <Text style={[styles.attendanceSeparator, { color: theme.textTertiary }]}>•</Text>
+                                                    <MaterialCommunityIcons 
+                                                        name="clock-alert" 
+                                                        size={14} 
+                                                        color="#FF9800" 
+                                                    />
+                                                    <Text style={[styles.attendanceLate, { color: '#FF9800' }]}>
+                                                        {attendance.lateMinutes} min
+                                                    </Text>
+                                                </>
+                                            )}
+                                        </View>
+                                        {attendance.notes && (
+                                            <Text style={[styles.attendanceNotes, { color: theme.textSecondary }]}>
+                                                {attendance.notes}
+                                            </Text>
+                                        )}
+                                    </View>
+                                </View>
+                            ))}
+                            {attendances.length > 10 && (
+                                <Text style={[styles.moreText, { color: theme.textSecondary }]}>
+                                    Et {attendances.length - 10} présence(s) de plus...
+                                </Text>
+                            )}
+                        </View>
+                    )}
+                </View>
+
                 {/* Placeholder for future sections */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Historique des séances</Text>
                     <View style={styles.card}>
                         <View style={styles.placeholderContainer}>
-                            <MaterialCommunityIcons name="calendar-clock" size={48} color="#ddd" />
-                            <Text style={styles.placeholderText}>Aucune séance enregistrée</Text>
+                            <MaterialCommunityIcons name="calendar-clock" size={48} color={theme.textTertiary} />
+                            <Text style={[styles.placeholderText, { color: theme.textSecondary }]}>Aucune séance enregistrée</Text>
                         </View>
                     </View>
                 </View>
@@ -419,5 +564,65 @@ const styles = StyleSheet.create({
     footerText: {
         fontSize: 12,
         color: '#999',
+    },
+    statsGrid: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+    },
+    statBox: {
+        alignItems: 'center',
+    },
+    statValue: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    statLabel: {
+        fontSize: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    attendanceItem: {
+        flexDirection: 'row',
+        paddingVertical: 12,
+    },
+    attendanceIcon: {
+        marginRight: 12,
+        paddingTop: 2,
+    },
+    attendanceInfo: {
+        flex: 1,
+    },
+    attendanceSubject: {
+        fontSize: 16,
+        fontWeight: '500',
+        marginBottom: 4,
+    },
+    attendanceDetails: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+    },
+    attendanceDate: {
+        fontSize: 14,
+    },
+    attendanceSeparator: {
+        fontSize: 14,
+        marginHorizontal: 4,
+    },
+    attendanceLate: {
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    attendanceNotes: {
+        fontSize: 14,
+        fontStyle: 'italic',
+        marginTop: 4,
+    },
+    moreText: {
+        fontSize: 13,
+        textAlign: 'center',
+        marginTop: 12,
+        fontStyle: 'italic',
     },
 });

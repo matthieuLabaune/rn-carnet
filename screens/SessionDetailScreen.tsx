@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/types';
 import { sessionService, classService, attendanceService, studentService } from '../services';
 import { Session, Class, Attendance, Student } from '../types';
 import SpeedDialFAB from '../components/SpeedDialFAB';
+import AttendanceDialog from '../components/AttendanceDialog';
 import { useTheme } from '../contexts/ThemeContext';
 
 type SessionDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SessionDetail'>;
@@ -31,6 +32,7 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
     const [attendances, setAttendances] = useState<AttendanceWithStudent[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
+    const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
 
     useEffect(() => {
         loadData();
@@ -108,8 +110,51 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
     };
 
     const handleTakeAttendance = () => {
-        // TODO: Ouvrir le dialog de prise de présences
-        Alert.alert('À venir', 'Le dialog de prise de présences sera implémenté prochainement');
+        setShowAttendanceDialog(true);
+    };
+
+    const handleSaveAttendances = async (attendancesData: Array<{
+        studentId: string;
+        present: boolean;
+        late: boolean;
+        lateMinutes?: number;
+        notes?: string;
+    }>) => {
+        try {
+            // Préparer les données avec sessionId
+            const attendancesToSave = attendancesData.map(att => ({
+                sessionId,
+                studentId: att.studentId,
+                present: att.present,
+                late: att.late,
+                lateMinutes: att.lateMinutes,
+                notes: att.notes,
+            }));
+
+            // Enregistrer en batch
+            await attendanceService.upsertBulk(attendancesToSave);
+            
+            setShowAttendanceDialog(false);
+            await loadData(); // Recharger les données
+            Alert.alert('Succès', 'Présences enregistrées');
+        } catch (error) {
+            console.error('Error saving attendances:', error);
+            Alert.alert('Erreur', 'Impossible d\'enregistrer les présences');
+        }
+    };
+
+    const getExistingAttendances = (): Map<string, any> => {
+        const map = new Map();
+        attendances.forEach(({ attendance }) => {
+            map.set(attendance.studentId, {
+                studentId: attendance.studentId,
+                present: attendance.present,
+                late: attendance.late,
+                lateMinutes: attendance.lateMinutes,
+                notes: attendance.notes,
+            });
+        });
+        return map;
     };
 
     if (loading || !session || !classData) {
@@ -310,6 +355,19 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
                     },
                 ]}
             />
+
+            {/* Dialog de prise de présences */}
+            {session && classData && (
+                <AttendanceDialog
+                    visible={showAttendanceDialog}
+                    onDismiss={() => setShowAttendanceDialog(false)}
+                    onSubmit={handleSaveAttendances}
+                    students={students}
+                    existingAttendances={getExistingAttendances()}
+                    sessionDate={session.date}
+                    classColor={classData.color}
+                />
+            )}
         </View>
     );
 }
