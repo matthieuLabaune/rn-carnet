@@ -34,15 +34,15 @@
 
 ### 📋 Ce qui reste à faire :
 
-#### 1. **Système de présences élèves** ⭐ PRIORITÉ
+#### 1. **Système de présences élèves** ⭐ PRIORITÉ ✅ TERMINÉ
 ```typescript
-// À créer : types/attendance.ts
+// ✅ Créé : types/attendance.ts
 interface Attendance {
   id: string;
   sessionId: string;
   studentId: string;
   present: boolean;
-  late?: boolean;
+  late: boolean;
   lateMinutes?: number;
   notes?: string;
   createdAt: string;
@@ -50,10 +50,20 @@ interface Attendance {
 ```
 
 **Tâches :**
-- [ ] Créer `types/attendance.ts`
-- [ ] Ajouter table `attendances` dans `database.ts`
-- [ ] Créer `attendanceService.ts` (CRUD)
-- [ ] Tester création/lecture de présences
+- [x] Créer `types/attendance.ts`
+- [x] Ajouter table `attendances` dans `database.ts`
+- [x] Créer `attendanceService.ts` (CRUD)
+- [x] Exports dans index.ts
+
+**Fonctionnalités disponibles :**
+- ✅ CRUD complet (Create, Read, Update, Delete)
+- ✅ Upsert (create or update) pour faciliter l'enregistrement
+- ✅ Upsert bulk pour enregistrer plusieurs présences en une fois
+- ✅ Statistiques par élève (taux de présence, absences, retards)
+- ✅ Statistiques par séance (présents, absents, non enregistrés)
+- ✅ Contrainte d'unicité (session_id, student_id)
+- ✅ Cascade delete (suppression auto si session/élève supprimé)
+- ✅ Index sur session_id et student_id pour performances
 
 #### 2. **SessionDetailScreen** ⭐ PRIORITÉ
 **Affichage :**
@@ -151,7 +161,7 @@ interface Attendance {
 - **classes** : id, name, level, subject, color
 - **students** : id, classId, firstName, lastName, handicaps, laterality, customTags, notes, photoUrl
 - **sessions** : id, classId, subject, description, date, duration, status, timerPreset
-- **attendances** 🆕 : à créer
+- **attendances** ✅ : id, sessionId, studentId, present, late, lateMinutes, notes, createdAt
 
 ---
 

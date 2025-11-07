@@ -108,8 +108,26 @@ interface Presence {
   seance_id: string;
   eleve_id: string;
   present: boolean;
+  late: boolean;
   retard_minutes?: number;
+  notes?: string;
   created_at: Date;
+}
+```
+
+**Relations :**
+- Une présence appartient à **une** séance
+- Une présence appartient à **un** élève
+- Contrainte d'unicité : (seance_id, eleve_id)
+
+**Statistiques calculées :**
+```typescript
+interface AttendanceStats {
+  totalSessions: number;       // Nombre total de séances
+  presentCount: number;         // Nombre de présences
+  absentCount: number;          // Nombre d'absences
+  lateCount: number;            // Nombre de retards
+  attendanceRate: number;       // Taux de présence (%)
 }
 ```
 
