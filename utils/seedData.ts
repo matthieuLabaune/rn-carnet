@@ -312,6 +312,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
                 notationSystem: 'points',
                 maxPoints: 20,
                 competenceIds: mathCompetences.map(c => c.id!),
+                isHomework: false, // En classe
             });
             totalEvaluations++;
 
@@ -344,6 +345,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
                 type: 'formative',
                 notationSystem: 'niveaux',
                 competenceIds: frenchCompetences.map(c => c.id!),
+                isHomework: true, // Devoir maison
             });
             totalEvaluations++;
 
@@ -378,6 +380,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
                     notationSystem: 'points',
                     maxPoints: 10,
                     competenceIds: scienceCompetences.map(c => c.id!),
+                    isHomework: false, // En classe
                 });
                 totalEvaluations++;
 

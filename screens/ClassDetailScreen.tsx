@@ -242,26 +242,42 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                     ) : (
                         <View>
                             {evaluations.slice(0, 3).map((evaluation) => (
-                                <TouchableOpacity
+                                <View
                                     key={evaluation.id}
                                     style={[styles.itemCard, { backgroundColor: theme.cardBackground }]}
-                                    onPress={() => navigation.navigate('EvaluationDetail', { evaluationId: evaluation.id })}
                                 >
-                                    <View style={styles.evaluationHeader}>
-                                        <View style={styles.evaluationTitleRow}>
-                                            <Text style={[styles.itemName, { color: theme.text }]}>
-                                                {evaluation.titre}
-                                            </Text>
-                                            {evaluation.sessionId && (
-                                                <MaterialCommunityIcons 
-                                                    name="link-variant" 
-                                                    size={16} 
-                                                    color={theme.textSecondary}
-                                                    style={{ marginLeft: 4 }}
-                                                />
-                                            )}
-                                        </View>
-                                        <View style={styles.evaluationBadges}>
+                                    <TouchableOpacity
+                                        onPress={() => navigation.navigate('EvaluationDetail', { evaluationId: evaluation.id })}
+                                    >
+                                        <View style={styles.evaluationHeader}>
+                                            <View style={styles.evaluationTitleRow}>
+                                                <Text style={[styles.itemName, { color: theme.text }]}>
+                                                    {evaluation.titre}
+                                                </Text>
+                                                {evaluation.sessionId && (
+                                                    <TouchableOpacity
+                                                        onPress={async (e) => {
+                                                            e.stopPropagation();
+                                                            try {
+                                                                const session = await sessionService.getById(evaluation.sessionId!);
+                                                                if (session) {
+                                                                    navigation.navigate('SessionDetail', { sessionId: evaluation.sessionId! });
+                                                                }
+                                                            } catch (error) {
+                                                                console.error('Error navigating to session:', error);
+                                                            }
+                                                        }}
+                                                        style={{ marginLeft: 8, padding: 4 }}
+                                                    >
+                                                        <MaterialCommunityIcons 
+                                                            name="link-variant" 
+                                                            size={16} 
+                                                            color={theme.primary}
+                                                        />
+                                                    </TouchableOpacity>
+                                                )}
+                                            </View>
+                                            <View style={styles.evaluationBadges}>
                                             <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
                                                 <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
                                                     {EVALUATION_TYPE_LABELS[evaluation.type]}
@@ -293,7 +309,8 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                             </Text>
                                         </View>
                                     </View>
-                                </TouchableOpacity>
+                                    </TouchableOpacity>
+                                </View>
                             ))}
                             {evaluations.length > 3 && (
                                 <TouchableOpacity
@@ -307,10 +324,12 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                             )}
                             {evaluations.length <= 3 && evaluations.length > 0 && (
                                 <TouchableOpacity
-                                    style={[styles.addButton, styles.addButtonSecondary, { borderColor: classColor }]}
+                                    style={styles.viewAllButton}
                                     onPress={() => navigation.navigate('EvaluationsList', { classId })}
                                 >
-                                    <Text style={[styles.addButtonTextSecondary, { color: classColor }]}>+ Créer une évaluation</Text>
+                                    <Text style={[styles.viewAllText, { color: classColor }]}>
+                                        Voir toutes les évaluations ({evaluations.length})
+                                    </Text>
                                 </TouchableOpacity>
                             )}
                         </View>

@@ -17,7 +17,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../contexts/ThemeContext';
-import { evaluationService, classService, competenceService } from '../services';
+import { evaluationService, classService, competenceService, sessionService } from '../services';
 import { Evaluation, EvaluationType, Class, Competence, EVALUATION_TYPE_LABELS } from '../types';
 import { RootStackParamList } from '../navigation/types';
 import EvaluationFormDialog from '../components/EvaluationFormDialog';
@@ -188,11 +188,25 @@ export default function EvaluationsListScreen() {
             </Text>
           </View>
           {item.sessionId && (
-            <MaterialCommunityIcons
-              name="link-variant"
-              size={20}
-              color={theme.primary}
-            />
+            <TouchableOpacity
+              onPress={async () => {
+                try {
+                  const session = await sessionService.getById(item.sessionId!);
+                  if (session) {
+                    navigation.navigate('SessionDetail', { sessionId: item.sessionId! });
+                  }
+                } catch (error) {
+                  Alert.alert('Erreur', 'Impossible d\'ouvrir la séance');
+                }
+              }}
+              style={styles.linkButton}
+            >
+              <MaterialCommunityIcons
+                name="link-variant"
+                size={20}
+                color={theme.primary}
+              />
+            </TouchableOpacity>
           )}
         </View>
 
@@ -213,6 +227,16 @@ export default function EvaluationsListScreen() {
           >
             {item.notationSystem === 'niveaux' ? 'Par niveaux' : `Sur ${item.maxPoints}`}
           </Chip>
+          {item.isHomework && (
+            <Chip
+              mode="outlined"
+              compact
+              textStyle={styles.chipText}
+              style={[styles.chip, { borderColor: theme.primary }]}
+            >
+              DM
+            </Chip>
+          )}
         </View>
 
         {competences.length > 0 && (
@@ -473,6 +497,11 @@ const styles = StyleSheet.create({
   competenceName: {
     fontSize: 14,
     flex: 1,
+  },
+  linkButton: {
+    padding: 4,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
   },
   moreCompetences: {
     fontSize: 12,

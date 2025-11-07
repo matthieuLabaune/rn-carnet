@@ -13,6 +13,7 @@ export interface Evaluation {
   notationSystem: NotationSystem;
   maxPoints?: number; // Required if notationSystem is 'points'
   competenceIds: string[];
+  isHomework: boolean; // true = devoir maison, false = en classe
   description?: string;
   createdAt: string;
   updatedAt?: string;

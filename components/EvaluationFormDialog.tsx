@@ -60,6 +60,7 @@ export default function EvaluationFormDialog({
   const [linkedToSession, setLinkedToSession] = useState(false);
   const [selectedSessionId, setSelectedSessionId] = useState<string | undefined>();
   const [selectedCompetenceIds, setSelectedCompetenceIds] = useState<string[]>([]);
+  const [isHomework, setIsHomework] = useState(false);
   
   const [availableCompetences, setAvailableCompetences] = useState<Competence[]>([]);
   const [availableSessions, setAvailableSessions] = useState<Session[]>([]);
@@ -80,6 +81,7 @@ export default function EvaluationFormDialog({
         setLinkedToSession(!!evaluation.sessionId);
         setSelectedSessionId(evaluation.sessionId);
         setSelectedCompetenceIds(evaluation.competenceIds);
+        setIsHomework(evaluation.isHomework);
       } else {
         // Create mode - reset form
         resetForm();
@@ -110,6 +112,7 @@ export default function EvaluationFormDialog({
     setLinkedToSession(false);
     setSelectedSessionId(undefined);
     setSelectedCompetenceIds([]);
+    setIsHomework(false);
   };
 
   const toggleCompetence = (competenceId: string) => {
@@ -148,6 +151,7 @@ export default function EvaluationFormDialog({
       notationSystem,
       maxPoints: notationSystem === 'points' ? parseInt(maxPoints, 10) : undefined,
       competenceIds: selectedCompetenceIds,
+      isHomework,
       description: description.trim() || undefined,
     };
 
@@ -338,6 +342,31 @@ export default function EvaluationFormDialog({
 
             <Divider style={styles.divider} />
 
+            {/* Devoir maison / en classe */}
+            <Text style={[styles.label, { color: theme.text }]}>Type de travail</Text>
+            <View style={styles.checkboxContainer}>
+              <TouchableOpacity
+                onPress={() => setIsHomework(!isHomework)}
+                style={styles.checkboxRow}
+              >
+                <MaterialCommunityIcons
+                  name={isHomework ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                  size={24}
+                  color={theme.primary}
+                />
+                <Text style={[styles.checkboxLabel, { color: theme.text }]}>
+                  Devoir maison
+                </Text>
+              </TouchableOpacity>
+              {!isHomework && (
+                <Text style={[styles.helperText, { color: theme.textSecondary }]}>
+                  Évaluation en classe
+                </Text>
+              )}
+            </View>
+
+            <Divider style={styles.divider} />
+
             {/* Competences Selection */}
             <Text style={[styles.label, { color: theme.text }]}>
               Compétences évaluées * ({selectedCompetenceIds.length})
@@ -464,6 +493,9 @@ const styles = StyleSheet.create({
   divider: {
     marginVertical: 16,
   },
+  checkboxContainer: {
+    marginBottom: 12,
+  },
   checkboxRow: {
     marginBottom: 12,
   },
@@ -474,6 +506,11 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 16,
+  },
+  helperText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    marginLeft: 32,
   },
   selectorContainer: {
     maxHeight: 250,

@@ -98,6 +98,7 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
       notation_system TEXT NOT NULL,
       max_points INTEGER,
       competence_ids TEXT NOT NULL,
+      is_homework INTEGER NOT NULL DEFAULT 0,
       description TEXT,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP,

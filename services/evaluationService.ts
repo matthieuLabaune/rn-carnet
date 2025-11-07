@@ -26,6 +26,7 @@ export const evaluationService = {
       notationSystem: row.notation_system as NotationSystem,
       maxPoints: row.max_points,
       competenceIds: JSON.parse(row.competence_ids),
+      isHomework: row.is_homework === 1,
       description: row.description,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
@@ -52,6 +53,7 @@ export const evaluationService = {
       notationSystem: result.notation_system as NotationSystem,
       maxPoints: result.max_points,
       competenceIds: JSON.parse(result.competence_ids),
+      isHomework: result.is_homework === 1,
       description: result.description,
       createdAt: result.created_at,
       updatedAt: result.updated_at,
@@ -77,6 +79,7 @@ export const evaluationService = {
       notationSystem: row.notation_system as NotationSystem,
       maxPoints: row.max_points,
       competenceIds: JSON.parse(row.competence_ids),
+      isHomework: row.is_homework === 1,
       description: row.description,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
@@ -103,6 +106,7 @@ export const evaluationService = {
       notationSystem: result.notation_system as NotationSystem,
       maxPoints: result.max_points,
       competenceIds: JSON.parse(result.competence_ids),
+      isHomework: result.is_homework === 1,
       description: result.description,
       createdAt: result.created_at,
       updatedAt: result.updated_at,
@@ -116,8 +120,8 @@ export const evaluationService = {
     const db = getDatabase();
     const now = new Date().toISOString();
     await db.runAsync(
-      `INSERT INTO evaluations (id, class_id, session_id, titre, date, type, notation_system, max_points, competence_ids, description, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO evaluations (id, class_id, session_id, titre, date, type, notation_system, max_points, competence_ids, is_homework, description, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         evaluation.id,
         evaluation.classId,
@@ -128,6 +132,7 @@ export const evaluationService = {
         evaluation.notationSystem,
         evaluation.maxPoints || null,
         JSON.stringify(evaluation.competenceIds),
+        evaluation.isHomework ? 1 : 0,
         evaluation.description || null,
         now,
         now,
@@ -234,6 +239,7 @@ export const evaluationService = {
       notationSystem: row.notation_system as NotationSystem,
       maxPoints: row.max_points,
       competenceIds: JSON.parse(row.competence_ids),
+      isHomework: row.is_homework === 1,
       description: row.description,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
