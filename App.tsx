@@ -23,7 +23,7 @@ const Tab = createBottomTabNavigator<MainTabsParamList>();
 
 function MainTabs() {
     const { theme } = useTheme();
-    
+
     return (
         <Tab.Navigator
             screenOptions={{
