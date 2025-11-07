@@ -121,6 +121,29 @@ export default function EvaluationDetailScreen() {
   const handleSaveGrade = async () => {
     if (!selectedStudent || !selectedCompetence || !evaluation) return;
 
+    // Validation for points system
+    if (evaluation.notationSystem === 'points') {
+      const score = parseFloat(formScore);
+      if (isNaN(score)) {
+        Alert.alert('Erreur', 'Le score doit être un nombre');
+        return;
+      }
+      if (score < 0) {
+        Alert.alert('Erreur', 'Le score ne peut pas être négatif');
+        return;
+      }
+      if (evaluation.maxPoints && score > evaluation.maxPoints) {
+        Alert.alert('Erreur', `Le score ne peut pas dépasser ${evaluation.maxPoints}`);
+        return;
+      }
+    }
+
+    // Validation for niveaux system
+    if (evaluation.notationSystem === 'niveaux' && !formNiveau) {
+      Alert.alert('Erreur', 'Veuillez sélectionner un niveau');
+      return;
+    }
+
     const resultData: Omit<EvaluationResult, 'createdAt' | 'updatedAt'> = {
       id: currentResult?.id || `result_${Date.now()}`,
       evaluationId: evaluation.id,
@@ -230,9 +253,17 @@ export default function EvaluationDetailScreen() {
       </View>
 
       {/* Grading Grid */}
-      <ScrollView horizontal style={styles.scrollHorizontal}>
-        <ScrollView style={styles.scrollVertical}>
-          <View style={styles.grid}>
+      <View style={styles.gridContainer}>
+        <ScrollView 
+          horizontal 
+          style={styles.scrollHorizontal}
+          contentContainerStyle={styles.scrollHorizontalContent}
+        >
+          <ScrollView 
+            style={styles.scrollVertical}
+            contentContainerStyle={styles.scrollVerticalContent}
+          >
+            <View style={styles.grid}>
             {/* Header Row */}
             <View style={styles.gridRow}>
               <View style={[styles.headerCell, styles.nameCell, { backgroundColor: theme.surface }]}>
@@ -279,9 +310,10 @@ export default function EvaluationDetailScreen() {
                 ))}
               </View>
             ))}
-          </View>
+            </View>
+          </ScrollView>
         </ScrollView>
-      </ScrollView>
+      </View>
 
       {/* Grading Dialog */}
       <Portal>
@@ -330,6 +362,20 @@ export default function EvaluationDetailScreen() {
                 keyboardType="decimal-pad"
                 mode="outlined"
                 style={styles.input}
+                error={
+                  formScore !== '' && 
+                  (isNaN(parseFloat(formScore)) || 
+                   parseFloat(formScore) < 0 || 
+                   (!!evaluation.maxPoints && parseFloat(formScore) > evaluation.maxPoints))
+                }
+                right={
+                  formScore !== '' && 
+                  !isNaN(parseFloat(formScore)) && 
+                  parseFloat(formScore) >= 0 &&
+                  (!evaluation.maxPoints || parseFloat(formScore) <= evaluation.maxPoints) ? (
+                    <TextInput.Icon icon="check" />
+                  ) : undefined
+                }
               />
             )}
 
@@ -394,11 +440,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
+  gridContainer: {
+    flex: 1,
+  },
   scrollHorizontal: {
     flex: 1,
   },
+  scrollHorizontalContent: {
+    minWidth: '100%',
+  },
   scrollVertical: {
     flex: 1,
+  },
+  scrollVerticalContent: {
+    paddingBottom: 20,
   },
   grid: {
     padding: 16,

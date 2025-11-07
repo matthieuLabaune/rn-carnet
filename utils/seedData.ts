@@ -1,6 +1,8 @@
-import { classService, studentService, sessionService, attendanceService } from '../services';
+import { classService, studentService, sessionService, attendanceService, competenceService, evaluationService, evaluationResultService } from '../services';
 import { Handicap, Laterality } from '../types/student';
 import { SessionFormData, SessionStatus } from '../types/session';
+import { Niveau } from '../types/evaluationResult';
+import { getAllPredefinedCompetences } from './predefinedCompetences';
 
 // Données réalistes pour les seeds
 const FIRST_NAMES = [
@@ -267,18 +269,156 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         }
         console.log(`  ✓ Generated ${totalAttendances} attendance records`);
 
+        // 5️⃣ Seed Competences
+        console.log('\n5️⃣ Seeding competences...');
+        const predefinedCompetences = getAllPredefinedCompetences();
+        const competencesToInsert = predefinedCompetences.map((c, index) => ({
+            id: `competence_${Date.now()}_${index}`,
+            nom: c.nom,
+            description: c.description,
+            domaine: c.domaine,
+            couleur: c.couleur,
+            isPredefined: true,
+        }));
+        await competenceService.bulkInsert(competencesToInsert);
+        console.log(`  ✓ Inserted ${competencesToInsert.length} predefined competences`);
+
+        // Get some competence IDs for evaluations
+        const allCompetences = await competenceService.getAll();
+        const mathCompetences = allCompetences.filter(c => c.domaine === 'mathematiques').slice(0, 3);
+        const frenchCompetences = allCompetences.filter(c => c.domaine === 'francais').slice(0, 3);
+        const scienceCompetences = allCompetences.filter(c => c.domaine === 'sciences').slice(0, 2);
+
+        // 6️⃣ Seed Evaluations
+        console.log('\n6️⃣ Seeding evaluations...');
+        let totalEvaluations = 0;
+        let totalResults = 0;
+
+        for (const classId of classIds) {
+            const classStudents = await studentService.getByClass(classId);
+            const classSessions = await sessionService.getByClass(classId);
+
+            // Create 3 evaluations per class
+            
+            // 1. Math evaluation (points) - linked to a session if available
+            const mathEvalId = `eval_${Date.now()}_math_${classId}`;
+            const mathEval = await evaluationService.create({
+                id: mathEvalId,
+                classId,
+                sessionId: classSessions.length > 0 ? classSessions[0].id : undefined,
+                titre: 'Évaluation Mathématiques - Géométrie',
+                date: new Date('2024-12-05').toISOString(),
+                type: 'sommative',
+                notationSystem: 'points',
+                maxPoints: 20,
+                competenceIds: mathCompetences.map(c => c.id!),
+            });
+            totalEvaluations++;
+
+            // Grade some students for this evaluation
+            for (let i = 0; i < Math.min(5, classStudents.length); i++) {
+                const student = classStudents[i];
+                for (const competence of mathCompetences) {
+                    await evaluationResultService.upsert({
+                        id: `result_${Date.now()}_${i}_${mathEval.id}_${student.id}_${competence.id}`,
+                        evaluationId: mathEval.id!,
+                        studentId: student.id!,
+                        competenceId: competence.id!,
+                        score: Math.floor(Math.random() * 15) + 6, // Random score between 6-20
+                        commentaire: i === 0 ? 'Très bon travail' : undefined,
+                    });
+                    totalResults++;
+                }
+            }
+
+            // Wait a bit to ensure unique IDs
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // 2. French evaluation (niveaux) - standalone
+            const frenchEvalId = `eval_${Date.now()}_french_${classId}`;
+            const frenchEval = await evaluationService.create({
+                id: frenchEvalId,
+                classId,
+                titre: 'Évaluation Français - Compréhension',
+                date: new Date('2024-12-10').toISOString(),
+                type: 'formative',
+                notationSystem: 'niveaux',
+                competenceIds: frenchCompetences.map(c => c.id!),
+            });
+            totalEvaluations++;
+
+            // Grade some students with niveaux
+            const niveaux: Niveau[] = ['non-atteint', 'partiellement-atteint', 'atteint', 'depasse'];
+            for (let i = 0; i < Math.min(4, classStudents.length); i++) {
+                const student = classStudents[i];
+                for (const competence of frenchCompetences) {
+                    await evaluationResultService.upsert({
+                        id: `result_${Date.now()}_${i}_${frenchEval.id}_${student.id}_${competence.id}`,
+                        evaluationId: frenchEval.id!,
+                        studentId: student.id!,
+                        competenceId: competence.id!,
+                        niveau: niveaux[Math.floor(Math.random() * niveaux.length)],
+                    });
+                    totalResults++;
+                }
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // 3. Sciences evaluation (points) - linked to another session
+            if (classSessions.length > 1) {
+                const scienceEvalId = `eval_${Date.now()}_science_${classId}`;
+                const scienceEval = await evaluationService.create({
+                    id: scienceEvalId,
+                    classId,
+                    sessionId: classSessions[1].id,
+                    titre: 'Évaluation Sciences - Expérimentation',
+                    date: new Date('2024-12-15').toISOString(),
+                    type: 'diagnostique',
+                    notationSystem: 'points',
+                    maxPoints: 10,
+                    competenceIds: scienceCompetences.map(c => c.id!),
+                });
+                totalEvaluations++;
+
+                // Grade a few students
+                for (let i = 0; i < Math.min(3, classStudents.length); i++) {
+                    const student = classStudents[i];
+                    for (const competence of scienceCompetences) {
+                        await evaluationResultService.upsert({
+                            id: `result_${Date.now()}_${i}_${scienceEval.id}_${student.id}_${competence.id}`,
+                            evaluationId: scienceEval.id!,
+                            studentId: student.id!,
+                            competenceId: competence.id!,
+                            score: Math.floor(Math.random() * 8) + 3, // Random score between 3-10
+                        });
+                        totalResults++;
+                    }
+                }
+            }
+        }
+
+        console.log(`  ✓ Created ${totalEvaluations} evaluations`);
+        console.log(`  ✓ Generated ${totalResults} evaluation results`);
+
         console.log('✅ Database seeded successfully!');
         console.log(`📊 Summary:`);
         console.log(`   - ${classIds.length} classes`);
         console.log(`   - ${totalStudents} students`);
         console.log(`   - ${totalSessions} sessions`);
         console.log(`   - ${totalAttendances} attendances`);
+        console.log(`   - ${competencesToInsert.length} competences`);
+        console.log(`   - ${totalEvaluations} evaluations`);
+        console.log(`   - ${totalResults} evaluation results`);
 
         return {
             classIds,
             totalStudents,
             totalSessions,
             totalAttendances,
+            totalCompetences: competencesToInsert.length,
+            totalEvaluations,
+            totalResults,
         };
     } catch (error) {
         console.error('❌ Error seeding database:', error);

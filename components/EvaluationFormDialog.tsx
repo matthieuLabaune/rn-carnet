@@ -301,7 +301,10 @@ export default function EvaluationFormDialog({
                 </Button>
 
                 {showSessionSelector && (
-                  <View style={[styles.selectorContainer, { backgroundColor: theme.surface }]}>
+                  <ScrollView 
+                    style={[styles.selectorContainer, { backgroundColor: theme.surface }]}
+                    nestedScrollEnabled
+                  >
                     {availableSessions.length === 0 ? (
                       <Text style={{ color: theme.textSecondary, padding: 16 }}>
                         Aucune séance disponible
@@ -328,7 +331,7 @@ export default function EvaluationFormDialog({
                         </TouchableOpacity>
                       ))
                     )}
-                  </View>
+                  </ScrollView>
                 )}
               </>
             )}
@@ -349,7 +352,10 @@ export default function EvaluationFormDialog({
             </Button>
 
             {showCompetenceSelector && (
-              <View style={[styles.selectorContainer, { backgroundColor: theme.surface }]}>
+              <ScrollView 
+                style={[styles.selectorContainer, { backgroundColor: theme.surface }]}
+                nestedScrollEnabled
+              >
                 {availableCompetences.length === 0 ? (
                   <Text style={{ color: theme.textSecondary, padding: 16 }}>
                     Aucune compétence disponible. Allez dans Paramètres → Compétences pour en créer.
@@ -378,7 +384,7 @@ export default function EvaluationFormDialog({
                     </TouchableOpacity>
                   ))
                 )}
-              </View>
+              </ScrollView>
             )}
 
             {/* Selected Competences */}
@@ -470,10 +476,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   selectorContainer: {
-    maxHeight: 200,
+    maxHeight: 250,
     borderRadius: 8,
     marginBottom: 16,
-    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
   selectorItem: {
     padding: 12,
