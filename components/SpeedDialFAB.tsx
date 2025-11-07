@@ -136,6 +136,7 @@ const styles = StyleSheet.create({
         right: 0,
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'flex-end',
     },
     actionButton: {
         width: 48,
@@ -160,6 +161,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.15,
         shadowRadius: 2,
+        maxWidth: 200,
     },
     label: {
         fontSize: 14,

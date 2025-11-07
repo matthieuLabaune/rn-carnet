@@ -16,6 +16,7 @@ import StudentListScreen from './screens/StudentListScreen';
 import StudentDetailScreen from './screens/StudentDetailScreen';
 import AllStudentsScreen from './screens/AllStudentsScreen';
 import AllSessionsScreen from './screens/AllSessionsScreen';
+import SessionListScreen from './screens/SessionListScreen';
 import SessionDetailScreen from './screens/SessionDetailScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
@@ -138,6 +139,11 @@ export default function App() {
                             <Stack.Screen
                                 name="StudentDetail"
                                 component={StudentDetailScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="SessionList"
+                                component={SessionListScreen}
                                 options={{ headerShown: false }}
                             />
                             <Stack.Screen
