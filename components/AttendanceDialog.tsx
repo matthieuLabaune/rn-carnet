@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, Modal, TouchableOpacity, Alert, TextInput } from 'react-native';
-import { Text, Switch, Checkbox } from 'react-native-paper';
+import { Text, Switch } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Student } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
@@ -274,16 +274,35 @@ export default function AttendanceDialog({
                                 <View style={styles.expandedContent}>
                                     {attendance.present && (
                                         <View style={styles.lateSection}>
-                                            <View style={styles.lateRow}>
-                                                <Checkbox
-                                                    status={attendance.late ? 'checked' : 'unchecked'}
-                                                    onPress={() => handleToggleLate(attendance.studentId)}
-                                                    color={classColor}
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.lateToggleButton,
+                                                    attendance.late && { 
+                                                        backgroundColor: '#FFF3E0',
+                                                        borderColor: '#FF9800'
+                                                    }
+                                                ]}
+                                                onPress={() => handleToggleLate(attendance.studentId)}
+                                                activeOpacity={0.7}
+                                            >
+                                                <MaterialCommunityIcons
+                                                    name={attendance.late ? 'clock-check' : 'clock-outline'}
+                                                    size={20}
+                                                    color={attendance.late ? '#FF9800' : theme.textSecondary}
                                                 />
-                                                <Text style={[styles.lateLabel, { color: theme.text }]}>En retard</Text>
-                                            </View>
+                                                <Text style={[
+                                                    styles.lateToggleText,
+                                                    { color: attendance.late ? '#FF9800' : theme.text }
+                                                ]}>
+                                                    {attendance.late ? 'En retard' : 'Marquer en retard'}
+                                                </Text>
+                                            </TouchableOpacity>
+                                            
                                             {attendance.late && (
                                                 <View style={styles.minutesInput}>
+                                                    <Text style={[styles.minutesLabel, { color: theme.textSecondary }]}>
+                                                        Retard de
+                                                    </Text>
                                                     <TextInput
                                                         style={[
                                                             styles.input,
@@ -293,7 +312,7 @@ export default function AttendanceDialog({
                                                                 borderColor: theme.border,
                                                             },
                                                         ]}
-                                                        placeholder="Minutes"
+                                                        placeholder="5"
                                                         placeholderTextColor={theme.textTertiary}
                                                         keyboardType="number-pad"
                                                         value={attendance.lateMinutes?.toString() || ''}
@@ -456,6 +475,22 @@ const styles = StyleSheet.create({
     lateSection: {
         marginBottom: 12,
     },
+    lateToggleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        backgroundColor: '#F5F5F5',
+        gap: 8,
+        marginBottom: 12,
+    },
+    lateToggleText: {
+        fontSize: 15,
+        fontWeight: '600',
+    },
     lateRow: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -469,19 +504,18 @@ const styles = StyleSheet.create({
     minutesInput: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginLeft: 40,
-        marginTop: 8,
+        gap: 8,
     },
     input: {
-        width: 80,
+        width: 70,
         height: 40,
         borderWidth: 1,
         borderRadius: 8,
         paddingHorizontal: 12,
         fontSize: 16,
+        textAlign: 'center',
     },
     minutesLabel: {
-        marginLeft: 8,
         fontSize: 14,
     },
     notesSection: {
