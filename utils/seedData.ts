@@ -1,4 +1,4 @@
-import { classService, studentService, sessionService } from '../services';
+import { classService, studentService, sessionService, attendanceService } from '../services';
 import { Handicap, Laterality } from '../types/student';
 import { SessionFormData, SessionStatus } from '../types/session';
 
@@ -151,6 +151,40 @@ const generateSession = (classId: string, daysAgo: number, subjects: string[]): 
 // Type d'enseignant
 export type TeacherType = 'primary' | 'secondary';
 
+// Générer les présences pour une séance
+const generateAttendancesForSession = async (sessionId: string, studentIds: string[], sessionDate: string) => {
+    const attendances = studentIds.map(studentId => {
+        // 85% de chance d'être présent
+        const present = randomBool(0.85);
+        
+        // Si présent, 15% de chance d'être en retard
+        const late = present && randomBool(0.15);
+        
+        // Si en retard, entre 5 et 30 minutes
+        const lateMinutes = late ? randomInt(5, 30) : undefined;
+        
+        // 10% de chance d'avoir une note (justificatif, etc.)
+        const notes = randomBool(0.1) ? randomItem([
+            'Justificatif médical',
+            'Rendez-vous médical',
+            'Problème de transport',
+            'Absence excusée par les parents',
+            'RAS',
+        ]) : undefined;
+
+        return {
+            sessionId,
+            studentId,
+            present,
+            late,
+            lateMinutes,
+            notes,
+        };
+    });
+
+    return attendances;
+};
+
 // Fonction principale de seed
 export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
     try {
@@ -172,24 +206,38 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         // 2. Créer les élèves (15-25 par classe)
         console.log('👨‍🎓 Creating students...');
         let totalStudents = 0;
+        const classStudentsMap = new Map<string, string[]>();
+        
         for (const classId of classIds) {
             const numStudents = randomInt(15, 25);
+            const studentIds: string[] = [];
+            
             for (let i = 0; i < numStudents; i++) {
                 const studentData = generateStudent(classId);
-                await studentService.create(studentData);
+                const newStudent = await studentService.create(studentData);
+                studentIds.push(newStudent.id);
                 totalStudents++;
             }
+            
+            classStudentsMap.set(classId, studentIds);
             console.log(`  ✓ Created ${numStudents} students for class ${classId}`);
         }
 
         // 3. Créer les séances (passées et futures)
         console.log('📅 Creating sessions...');
         let totalSessions = 0;
+        const completedSessions: Array<{ id: string; classId: string; date: string }> = [];
+        
         for (const classId of classIds) {
             // Séances passées (derniers 30 jours)
             for (let day = 30; day > 0; day -= randomInt(2, 4)) {
                 const sessionData = generateSession(classId, day, SUBJECTS);
-                await sessionService.create(sessionData);
+                const newSession = await sessionService.create(sessionData);
+                completedSessions.push({
+                    id: newSession.id,
+                    classId,
+                    date: sessionData.date,
+                });
                 totalSessions++;
             }
 
@@ -202,16 +250,35 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         }
         console.log(`  ✓ Created ${totalSessions} sessions`);
 
+        // 4. Générer les présences pour les séances passées
+        console.log('✅ Generating attendances...');
+        let totalAttendances = 0;
+        
+        for (const session of completedSessions) {
+            const studentIds = classStudentsMap.get(session.classId) || [];
+            const attendances = await generateAttendancesForSession(
+                session.id,
+                studentIds,
+                session.date
+            );
+            
+            await attendanceService.upsertBulk(attendances);
+            totalAttendances += attendances.length;
+        }
+        console.log(`  ✓ Generated ${totalAttendances} attendance records`);
+
         console.log('✅ Database seeded successfully!');
         console.log(`📊 Summary:`);
         console.log(`   - ${classIds.length} classes`);
         console.log(`   - ${totalStudents} students`);
         console.log(`   - ${totalSessions} sessions`);
+        console.log(`   - ${totalAttendances} attendances`);
 
         return {
             classIds,
             totalStudents,
             totalSessions,
+            totalAttendances,
         };
     } catch (error) {
         console.error('❌ Error seeding database:', error);
