@@ -56,6 +56,23 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
     CREATE INDEX IF NOT EXISTS idx_sessions_class_id ON sessions(class_id);
     CREATE INDEX IF NOT EXISTS idx_sessions_date ON sessions(date);
     CREATE INDEX IF NOT EXISTS idx_sessions_status ON sessions(status);
+
+    CREATE TABLE IF NOT EXISTS attendances (
+      id TEXT PRIMARY KEY NOT NULL,
+      session_id TEXT NOT NULL,
+      student_id TEXT NOT NULL,
+      present INTEGER NOT NULL DEFAULT 1,
+      late INTEGER NOT NULL DEFAULT 0,
+      late_minutes INTEGER,
+      notes TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+      FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+      UNIQUE(session_id, student_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_attendances_session_id ON attendances(session_id);
+    CREATE INDEX IF NOT EXISTS idx_attendances_student_id ON attendances(student_id);
   `);
 
     // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
