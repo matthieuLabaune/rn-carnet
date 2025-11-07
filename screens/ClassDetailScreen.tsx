@@ -205,9 +205,15 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                 </TouchableOpacity>
                             ))}
                             {sessions.length > 3 && (
-                                <TouchableOpacity style={styles.viewAllButton}>
+                                <TouchableOpacity 
+                                    style={styles.viewAllButton}
+                                    onPress={() => {
+                                        // Retourner et laisser l'utilisateur aller à l'onglet Séances
+                                        navigation.goBack();
+                                    }}
+                                >
                                     <Text style={[styles.viewAllText, { color: classColor }]}>
-                                        Voir toutes les séances ({sessions.length})
+                                        Voir toutes les séances ({sessions.length}) →
                                     </Text>
                                 </TouchableOpacity>
                             )}

@@ -45,11 +45,20 @@ export default function SpeedDialFAB({
 
     return (
         <View style={styles.container}>
+            {/* Backdrop */}
+            {open && (
+                <TouchableOpacity
+                    style={styles.backdrop}
+                    activeOpacity={1}
+                    onPress={toggleMenu}
+                />
+            )}
+            
             {/* Action buttons */}
             {actions.map((action, index) => {
                 const translateY = animation.interpolate({
                     inputRange: [0, 1],
-                    outputRange: [0, -(60 * (actions.length - index))],
+                    outputRange: [0, -(68 * (index + 1))],
                 });
 
                 const opacity = animation.interpolate({
@@ -99,15 +108,6 @@ export default function SpeedDialFAB({
                     <MaterialCommunityIcons name="plus" size={28} color={iconColor} />
                 </Animated.View>
             </TouchableOpacity>
-
-            {/* Backdrop */}
-            {open && (
-                <TouchableOpacity
-                    style={styles.backdrop}
-                    activeOpacity={1}
-                    onPress={toggleMenu}
-                />
-            )}
         </View>
     );
 }
@@ -168,10 +168,11 @@ const styles = StyleSheet.create({
     },
     backdrop: {
         position: 'absolute',
-        top: -1000,
-        left: -1000,
-        right: -1000,
-        bottom: -1000,
-        backgroundColor: 'transparent',
+        top: -10000,
+        left: -10000,
+        right: -10000,
+        bottom: -10000,
+        backgroundColor: 'rgba(0, 0, 0, 0.3)',
+        zIndex: -1,
     },
 });
