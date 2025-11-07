@@ -8,6 +8,8 @@ export type RootStackParamList = {
     SessionList: { classId: string };
     SessionDetail: { sessionId: string };
     CompetencesManagement: undefined;
+    EvaluationsList: { classId: string };
+    EvaluationDetail: { evaluationId: string };
 };
 
 export type MainTabsParamList = {

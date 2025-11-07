@@ -19,6 +19,8 @@ import AllSessionsScreen from './screens/AllSessionsScreen';
 import SessionListScreen from './screens/SessionListScreen';
 import SessionDetailScreen from './screens/SessionDetailScreen';
 import CompetencesManagementScreen from './screens/CompetencesManagementScreen';
+import EvaluationsListScreen from './screens/EvaluationsListScreen';
+import EvaluationDetailScreen from './screens/EvaluationDetailScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -155,6 +157,16 @@ export default function App() {
                             <Stack.Screen
                                 name="CompetencesManagement"
                                 component={CompetencesManagementScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="EvaluationsList"
+                                component={EvaluationsListScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="EvaluationDetail"
+                                component={EvaluationDetailScreen}
                                 options={{ headerShown: false }}
                             />
                         </Stack.Navigator>
