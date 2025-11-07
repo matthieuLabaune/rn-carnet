@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../navigation/types';
 import { sessionService, classService } from '../services';
 import { Session, Class } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 export default function AllSessionsScreen() {
     const { theme } = useTheme();
+    const navigation = useNavigation<NavigationProp>();
     const [sessions, setSessions] = useState<Session[]>([]);
     const [classes, setClasses] = useState<Class[]>([]);
     const [loading, setLoading] = useState(true);
@@ -102,7 +108,11 @@ export default function AllSessionsScreen() {
                 ) : (
                     <View style={styles.list}>
                         {sessions.map((session) => (
-                            <TouchableOpacity key={session.id} style={[styles.sessionCard, { backgroundColor: theme.cardBackground }]}>
+                            <TouchableOpacity 
+                                key={session.id} 
+                                style={[styles.sessionCard, { backgroundColor: theme.cardBackground }]}
+                                onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
+                            >
                                 <View style={styles.sessionHeader}>
                                     <View style={styles.sessionTitleRow}>
                                         <Text style={[styles.sessionSubject, { color: theme.text }]}>{session.subject}</Text>

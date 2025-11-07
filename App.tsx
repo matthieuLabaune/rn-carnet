@@ -16,6 +16,7 @@ import StudentListScreen from './screens/StudentListScreen';
 import StudentDetailScreen from './screens/StudentDetailScreen';
 import AllStudentsScreen from './screens/AllStudentsScreen';
 import AllSessionsScreen from './screens/AllSessionsScreen';
+import SessionDetailScreen from './screens/SessionDetailScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -137,6 +138,11 @@ export default function App() {
                             <Stack.Screen
                                 name="StudentDetail"
                                 component={StudentDetailScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="SessionDetail"
+                                component={SessionDetailScreen}
                                 options={{ headerShown: false }}
                             />
                         </Stack.Navigator>

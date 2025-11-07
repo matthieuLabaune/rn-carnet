@@ -181,7 +181,11 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                     ) : (
                         <View>
                             {sessions.slice(0, 3).map((session) => (
-                                <View key={session.id} style={styles.itemCard}>
+                                <TouchableOpacity
+                                    key={session.id}
+                                    style={styles.itemCard}
+                                    onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
+                                >
                                     <View style={styles.sessionHeader}>
                                         <Text style={styles.itemName}>{session.subject}</Text>
                                         <View style={[styles.statusBadge, getStatusStyle(session.status)]}>
@@ -198,7 +202,7 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                             month: 'long',
                                         })}
                                     </Text>
-                                </View>
+                                </TouchableOpacity>
                             ))}
                             {sessions.length > 3 && (
                                 <TouchableOpacity style={styles.viewAllButton}>
