@@ -274,29 +274,21 @@ export default function AttendanceDialog({
                                 <View style={styles.expandedContent}>
                                     {attendance.present && (
                                         <View style={styles.lateSection}>
-                                            <TouchableOpacity
-                                                style={[
-                                                    styles.lateToggleButton,
-                                                    attendance.late && { 
-                                                        backgroundColor: '#FFF3E0',
-                                                        borderColor: '#FF9800'
-                                                    }
-                                                ]}
-                                                onPress={() => handleToggleLate(attendance.studentId)}
-                                                activeOpacity={0.7}
-                                            >
-                                                <MaterialCommunityIcons
-                                                    name={attendance.late ? 'clock-check' : 'clock-outline'}
-                                                    size={20}
+                                            <View style={styles.switchRow}>
+                                                <MaterialCommunityIcons 
+                                                    name="clock-alert" 
+                                                    size={20} 
                                                     color={attendance.late ? '#FF9800' : theme.textSecondary}
                                                 />
-                                                <Text style={[
-                                                    styles.lateToggleText,
-                                                    { color: attendance.late ? '#FF9800' : theme.text }
-                                                ]}>
-                                                    {attendance.late ? 'En retard' : 'Marquer en retard'}
+                                                <Text style={[styles.switchLabel, { color: theme.text }]}>
+                                                    En retard
                                                 </Text>
-                                            </TouchableOpacity>
+                                                <Switch
+                                                    value={attendance.late}
+                                                    onValueChange={() => handleToggleLate(attendance.studentId)}
+                                                    color="#FF9800"
+                                                />
+                                            </View>
                                             
                                             {attendance.late && (
                                                 <View style={styles.minutesInput}>
@@ -475,21 +467,17 @@ const styles = StyleSheet.create({
     lateSection: {
         marginBottom: 12,
     },
-    lateToggleButton: {
+    switchRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: '#E0E0E0',
-        backgroundColor: '#F5F5F5',
-        gap: 8,
-        marginBottom: 12,
+        paddingVertical: 8,
+        marginBottom: 8,
+        gap: 12,
     },
-    lateToggleText: {
-        fontSize: 15,
-        fontWeight: '600',
+    switchLabel: {
+        fontSize: 16,
+        fontWeight: '500',
+        flex: 1,
     },
     lateRow: {
         flexDirection: 'row',
