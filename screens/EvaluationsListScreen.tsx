@@ -217,26 +217,34 @@ export default function EvaluationsListScreen() {
 
         {competences.length > 0 && (
           <View style={styles.competencesList}>
-            <Text style={[styles.competencesLabel, { color: theme.textSecondary }]}>
-              Compétences :
-            </Text>
-            <View style={styles.competencesChips}>
-              {competences.slice(0, 3).map(comp => (
-                <Chip
-                  key={comp.id}
-                  compact
-                  textStyle={[styles.competenceChipText, { color: comp.couleur }]}
-                  style={[styles.competenceChip, { backgroundColor: comp.couleur + '20' }]}
+            <View style={styles.competencesRow}>
+              <MaterialCommunityIcons 
+                name="star-box-multiple" 
+                size={16} 
+                color={theme.textSecondary} 
+                style={{ marginRight: 6 }}
+              />
+              <Text style={[styles.competencesCount, { color: theme.textSecondary }]}>
+                {competences.length} compétence{competences.length > 1 ? 's' : ''}
+              </Text>
+            </View>
+            {competences.slice(0, 2).map(comp => (
+              <View key={comp.id} style={styles.competenceRow}>
+                <View style={[styles.competenceDot, { backgroundColor: comp.couleur }]} />
+                <Text 
+                  style={[styles.competenceName, { color: theme.text }]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
                 >
                   {comp.nom}
-                </Chip>
-              ))}
-              {competences.length > 3 && (
-                <Text style={{ color: theme.textSecondary, fontSize: 12 }}>
-                  +{competences.length - 3}
                 </Text>
-              )}
-            </View>
+              </View>
+            ))}
+            {competences.length > 2 && (
+              <Text style={[styles.moreCompetences, { color: theme.textSecondary }]}>
+                +{competences.length - 2} autre{competences.length - 2 > 1 ? 's' : ''}
+              </Text>
+            )}
           </View>
         )}
       </TouchableOpacity>
@@ -437,23 +445,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   competencesList: {
-    marginTop: 8,
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0, 0, 0, 0.1)',
   },
-  competencesLabel: {
+  competencesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  competencesCount: {
     fontSize: 12,
+    fontWeight: '600',
+  },
+  competenceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 6,
   },
-  competencesChips: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    alignItems: 'center',
+  competenceDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginRight: 8,
   },
-  competenceChip: {
-    height: 24,
+  competenceName: {
+    fontSize: 14,
+    flex: 1,
   },
-  competenceChipText: {
-    fontSize: 11,
+  moreCompetences: {
+    fontSize: 12,
+    fontStyle: 'italic',
+    marginTop: 4,
+    marginLeft: 16,
   },
   emptyState: {
     flex: 1,
