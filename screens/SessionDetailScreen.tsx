@@ -7,7 +7,7 @@ import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
 import { sessionService, classService, attendanceService, studentService } from '../services';
 import { Session, Class, Attendance, Student } from '../types';
-import CustomFAB from '../components/CustomFAB';
+import SpeedDialFAB from '../components/SpeedDialFAB';
 import { useTheme } from '../contexts/ThemeContext';
 
 type SessionDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SessionDetail'>;
@@ -292,12 +292,23 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
                 </Card>
             </ScrollView>
 
-            {/* FAB pour prendre les présences */}
-            <CustomFAB
-                icon="clipboard-check"
-                onPress={handleTakeAttendance}
+            {/* SpeedDial FAB avec actions multiples */}
+            <SpeedDialFAB
                 backgroundColor={classData.color}
-                iconColor="#FFFFFF"
+                actions={[
+                    {
+                        icon: 'clipboard-check',
+                        label: 'Prendre les présences',
+                        onPress: handleTakeAttendance,
+                        color: classData.color,
+                    },
+                    {
+                        icon: 'pencil',
+                        label: 'Modifier la séance',
+                        onPress: () => Alert.alert('À venir', 'Modification de séance'),
+                        color: classData.color,
+                    },
+                ]}
             />
         </View>
     );
