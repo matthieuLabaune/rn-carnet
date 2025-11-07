@@ -460,13 +460,18 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=xxx
 - [ ] Historique
 
 ### Sprint 2 - Polish (1 semaine)
-- [ ] Emploi du temps
-- [ ] QR Code présences
-- [ ] Timers personnalisables
-- [ ] Thème dark mode
+- [x] Emploi du temps
+- [x] QR Code présences
+- [x] Timers personnalisables
+- [x] Thème dark mode
 - [ ] Tests unitaires
 
 ### Sprint 3 - Advanced (2 semaines)
+- [x] Système d'évaluations
+- [x] Compétences prédéfinies et personnalisées
+- [x] Grille de notation (points et niveaux)
+- [x] Édition inline des notes
+- [ ] **Notation par exercice** (alternative à la notation par compétence)
 - [ ] Autoévaluation
 - [ ] Fiches révision
 - [ ] Stats & graphiques
@@ -475,6 +480,66 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=xxx
 
 ---
 
+## 🎯 Fonctionnalités Évaluations (Phase F - Complétée)
+
+### Système de Notation
+
+#### Notation par Compétence (Actuel)
+- Évaluer chaque élève sur plusieurs compétences
+- 2 systèmes : niveaux (NA, PA, A, D) ou points (sur X)
+- Grille élèves × compétences
+- Colonne Total avec somme automatique
+- Édition inline pour système par points
+- Dialog pour système par niveaux
+
+#### Notation par Exercice (À implémenter)
+**Besoin** : Permettre de noter par exercice plutôt que par compétence
+
+**Cas d'usage** :
+- Contrôle avec 5 exercices notés sur 4, 6, 5, 10, 15 points
+- Chaque exercice peut évaluer une ou plusieurs compétences
+- Total = somme des exercices
+- Conversion automatique compétences depuis les notes d'exercices
+
+**Structure proposée** :
+```typescript
+interface Exercise {
+  id: string;
+  numero: number; // Ex: 1, 2, 3...
+  titre?: string; // Ex: "Théorème de Pythagore"
+  maxPoints: number; // Ex: 4
+  competenceIds: string[]; // Compétences évaluées
+}
+
+interface EvaluationExercise extends Evaluation {
+  evaluationType: 'competences' | 'exercices';
+  exercises?: Exercise[]; // Si evaluationType = 'exercices'
+}
+
+interface ExerciseResult {
+  id: string;
+  evaluationId: string;
+  studentId: string;
+  exerciseId: string;
+  score: number;
+  commentaire?: string;
+}
+```
+
+**Affichage** :
+- Grille élèves × exercices (au lieu de × compétences)
+- Colonne Total = somme des exercices
+- Max Total = somme des maxPoints de tous les exercices
+- Vue synthèse par compétence (calculée depuis les exercices)
+
+**Avantages** :
+- Plus proche du mode de notation traditionnel
+- Permet des exercices de poids différents
+- Calcul automatique des compétences
+- Flexibilité pour corrections partielles
+
+---
+
 **Version:** 1.0.0-MVP  
-**Dernière mise à jour:** 2025-11-03  
+**Dernière mise à jour:** 2025-11-07  
 **Auteur:** Matt
