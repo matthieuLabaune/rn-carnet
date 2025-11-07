@@ -267,48 +267,55 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                                                 console.error('Error navigating to session:', error);
                                                             }
                                                         }}
-                                                        style={{ marginLeft: 8, padding: 4 }}
+                                                        style={[styles.linkIconButton, { backgroundColor: theme.surfaceVariant }]}
                                                     >
                                                         <MaterialCommunityIcons 
                                                             name="link-variant" 
-                                                            size={16} 
+                                                            size={18} 
                                                             color={theme.primary}
                                                         />
                                                     </TouchableOpacity>
                                                 )}
                                             </View>
                                             <View style={styles.evaluationBadges}>
-                                            <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
-                                                <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
-                                                    {EVALUATION_TYPE_LABELS[evaluation.type]}
-                                                </Text>
-                                            </View>
-                                            <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
-                                                <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
-                                                    {NOTATION_SYSTEM_LABELS[evaluation.notationSystem]}
-                                                </Text>
+                                                <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+                                                    <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+                                                        {EVALUATION_TYPE_LABELS[evaluation.type]}
+                                                    </Text>
+                                                </View>
+                                                <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+                                                    <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+                                                        {NOTATION_SYSTEM_LABELS[evaluation.notationSystem]}
+                                                    </Text>
+                                                </View>
+                                                {evaluation.isHomework && (
+                                                    <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant, borderColor: theme.primary, borderWidth: 1 }]}>
+                                                        <Text style={[styles.evaluationBadgeText, { color: theme.primary }]}>
+                                                            DM
+                                                        </Text>
+                                                    </View>
+                                                )}
                                             </View>
                                         </View>
-                                    </View>
-                                    <Text style={[styles.evaluationDate, { color: theme.textTertiary }]}>
+                                        <Text style={[styles.evaluationDate, { color: theme.textTertiary }]}>
                                         {new Date(evaluation.date).toLocaleDateString('fr-FR', {
                                             day: 'numeric',
                                             month: 'long',
                                             year: 'numeric',
                                         })}
                                     </Text>
-                                    <View style={styles.evaluationFooter}>
-                                        <View style={styles.evaluationCompetences}>
-                                            <MaterialCommunityIcons 
-                                                name="star-box-multiple" 
-                                                size={14} 
-                                                color={theme.textTertiary}
-                                            />
-                                            <Text style={[styles.evaluationCompetencesText, { color: theme.textTertiary }]}>
-                                                {evaluation.competenceIds.length} compétence{evaluation.competenceIds.length > 1 ? 's' : ''}
-                                            </Text>
+                                        <View style={styles.evaluationFooter}>
+                                            <View style={styles.evaluationCompetences}>
+                                                <MaterialCommunityIcons 
+                                                    name="star-box-multiple" 
+                                                    size={14} 
+                                                    color={theme.textTertiary}
+                                                />
+                                                <Text style={[styles.evaluationCompetencesText, { color: theme.textTertiary }]}>
+                                                    {evaluation.competenceIds.length} compétence{evaluation.competenceIds.length > 1 ? 's' : ''}
+                                                </Text>
+                                            </View>
                                         </View>
-                                    </View>
                                     </TouchableOpacity>
                                 </View>
                             ))}
@@ -545,6 +552,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginBottom: 8,
+    },
+    linkIconButton: {
+        marginLeft: 8,
+        padding: 8,
+        borderRadius: 8,
     },
     evaluationBadges: {
         flexDirection: 'row',

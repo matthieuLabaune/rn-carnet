@@ -199,11 +199,11 @@ export default function EvaluationsListScreen() {
                   Alert.alert('Erreur', 'Impossible d\'ouvrir la séance');
                 }
               }}
-              style={styles.linkButton}
+              style={[styles.linkButton, { backgroundColor: theme.surfaceVariant }]}
             >
               <MaterialCommunityIcons
                 name="link-variant"
-                size={20}
+                size={18}
                 color={theme.primary}
               />
             </TouchableOpacity>
@@ -499,9 +499,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   linkButton: {
-    padding: 4,
-    borderRadius: 4,
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    padding: 8,
+    borderRadius: 8,
   },
   moreCompetences: {
     fontSize: 12,
