@@ -7,6 +7,7 @@ export type RootStackParamList = {
     StudentDetail: { studentId: string };
     SessionList: { classId: string };
     SessionDetail: { sessionId: string };
+    CompetencesManagement: undefined;
 };
 
 export type MainTabsParamList = {

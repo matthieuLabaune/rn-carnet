@@ -2,10 +2,16 @@ import React from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, StatusBar, Alert } from 'react-native';
 import { Text, Switch } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../contexts/ThemeContext';
 import { seedDatabase, TeacherType } from '../utils/seedData';
+import { RootStackParamList } from '../navigation/types';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function SettingsScreen() {
+    const navigation = useNavigation<NavigationProp>();
     const { theme, themeMode, setThemeMode, isDark } = useTheme();
     const [notifications, setNotifications] = React.useState(true);
     const [isSeeding, setIsSeeding] = React.useState(false);
@@ -108,6 +114,34 @@ export default function SettingsScreen() {
                             onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}
                         />
                     </View>
+                </View>
+
+                {/* Notifications */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Pédagogie</Text>
+
+                    <TouchableOpacity 
+                        style={[styles.settingRow, { backgroundColor: theme.cardBackground }]} 
+                        onPress={() => navigation.navigate('CompetencesManagement')}
+                    >
+                        <View style={styles.settingInfo}>
+                            <MaterialCommunityIcons 
+                                name="star-box-multiple" 
+                                size={24} 
+                                color={theme.primary} 
+                                style={styles.settingIcon} 
+                            />
+                            <View>
+                                <Text style={[styles.settingLabel, { color: theme.text }]}>
+                                    Compétences
+                                </Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>
+                                    Gérer la bibliothèque de compétences
+                                </Text>
+                            </View>
+                        </View>
+                        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.textSecondary} />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Notifications */}
