@@ -275,6 +275,11 @@ export default function AttendanceDialog({
                                     {attendance.present && (
                                         <View style={styles.lateSection}>
                                             <View style={styles.switchRow}>
+                                                <Switch
+                                                    value={attendance.late}
+                                                    onValueChange={() => handleToggleLate(attendance.studentId)}
+                                                    color="#FF9800"
+                                                />
                                                 <MaterialCommunityIcons 
                                                     name="clock-alert" 
                                                     size={20} 
@@ -283,11 +288,6 @@ export default function AttendanceDialog({
                                                 <Text style={[styles.switchLabel, { color: theme.text }]}>
                                                     En retard
                                                 </Text>
-                                                <Switch
-                                                    value={attendance.late}
-                                                    onValueChange={() => handleToggleLate(attendance.studentId)}
-                                                    color="#FF9800"
-                                                />
                                             </View>
                                             
                                             {attendance.late && (
