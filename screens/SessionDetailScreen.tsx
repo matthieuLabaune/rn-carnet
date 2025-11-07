@@ -5,11 +5,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-import { sessionService, classService, attendanceService, studentService } from '../services';
-import { Session, Class, Attendance, Student } from '../types';
+import { sessionService, classService, attendanceService, studentService, evaluationService } from '../services';
+import { Session, Class, Attendance, Student, Evaluation } from '../types';
 import SpeedDialFAB from '../components/SpeedDialFAB';
 import AttendanceDialog from '../components/AttendanceDialog';
 import { useTheme } from '../contexts/ThemeContext';
+import { EVALUATION_TYPE_LABELS, NOTATION_SYSTEM_LABELS } from '../types/evaluation';
 
 type SessionDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SessionDetail'>;
 type SessionDetailScreenRouteProp = RouteProp<RootStackParamList, 'SessionDetail'>;
@@ -31,6 +32,7 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
     const [classData, setClassData] = useState<Class | null>(null);
     const [attendances, setAttendances] = useState<AttendanceWithStudent[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
+    const [linkedEvaluation, setLinkedEvaluation] = useState<Evaluation | null>(null);
     const [loading, setLoading] = useState(true);
     const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
 
@@ -58,11 +60,13 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
             const classInfo = await classService.getById(sessionData.classId);
             setClassData(classInfo);
 
-            const [attendancesData, studentsData] = await Promise.all([
+            const [attendancesData, studentsData, evaluationData] = await Promise.all([
                 attendanceService.getBySession(sessionId),
                 studentService.getByClass(sessionData.classId),
+                evaluationService.getBySessionId(sessionId),
             ]);
             setStudents(studentsData);
+            setLinkedEvaluation(evaluationData);
 
             // Enrichir les présences avec les infos élèves
             const enrichedAttendances: AttendanceWithStudent[] = attendancesData
@@ -274,6 +278,67 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
                     </Card.Content>
                 </Card>
 
+                {/* Section Évaluation liée */}
+                {linkedEvaluation ? (
+                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                        <Card.Content>
+                            <View style={styles.evaluationHeader}>
+                                <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                                    Évaluation liée
+                                </Text>
+                                <MaterialCommunityIcons name="link-variant" size={20} color={theme.textSecondary} />
+                            </View>
+                            <TouchableOpacity
+                                style={[styles.evaluationCard, { backgroundColor: theme.cardBackground }]}
+                                onPress={() => navigation.navigate('EvaluationDetail', { evaluationId: linkedEvaluation.id })}
+                            >
+                                <Text style={[styles.evaluationTitle, { color: theme.text }]}>
+                                    {linkedEvaluation.titre}
+                                </Text>
+                                <View style={styles.evaluationBadges}>
+                                    <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+                                        <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+                                            {EVALUATION_TYPE_LABELS[linkedEvaluation.type]}
+                                        </Text>
+                                    </View>
+                                    <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+                                        <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+                                            {NOTATION_SYSTEM_LABELS[linkedEvaluation.notationSystem]}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View style={styles.evaluationFooter}>
+                                    <MaterialCommunityIcons name="star-box-multiple" size={14} color={theme.textTertiary} />
+                                    <Text style={[styles.evaluationCompetences, { color: theme.textTertiary }]}>
+                                        {linkedEvaluation.competenceIds.length} compétence{linkedEvaluation.competenceIds.length > 1 ? 's' : ''}
+                                    </Text>
+                                </View>
+                            </TouchableOpacity>
+                        </Card.Content>
+                    </Card>
+                ) : (
+                    <Card style={[styles.card, { backgroundColor: theme.surface }]}>
+                        <Card.Content>
+                            <Text style={[styles.sectionTitle, { color: theme.text }]}>
+                                Évaluation
+                            </Text>
+                            <TouchableOpacity
+                                style={[styles.createEvaluationButton, { borderColor: classData?.color }]}
+                                onPress={() => {
+                                    if (session && classData) {
+                                        navigation.navigate('EvaluationsList', { classId: classData.id });
+                                    }
+                                }}
+                            >
+                                <MaterialCommunityIcons name="clipboard-plus" size={20} color={classData?.color} />
+                                <Text style={[styles.createEvaluationText, { color: classData?.color }]}>
+                                    Créer une évaluation pour cette séance
+                                </Text>
+                            </TouchableOpacity>
+                        </Card.Content>
+                    </Card>
+                )}
+
                 {/* Liste des élèves */}
                 <Card style={[styles.card, { backgroundColor: theme.surface, marginBottom: 80 }]}>
                     <Card.Content>
@@ -483,5 +548,58 @@ const styles = StyleSheet.create({
     studentStatus: {
         flexDirection: 'row',
         alignItems: 'center',
+    },
+    evaluationHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    evaluationCard: {
+        padding: 12,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#E0E0E0',
+    },
+    evaluationTitle: {
+        fontSize: 16,
+        fontWeight: '600',
+        marginBottom: 8,
+    },
+    evaluationBadges: {
+        flexDirection: 'row',
+        gap: 8,
+        marginBottom: 8,
+    },
+    evaluationBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+    },
+    evaluationBadgeText: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    evaluationFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    evaluationCompetences: {
+        fontSize: 12,
+    },
+    createEvaluationButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        padding: 12,
+        borderWidth: 1.5,
+        borderRadius: 8,
+        borderStyle: 'dashed',
+    },
+    createEvaluationText: {
+        fontSize: 14,
+        fontWeight: '600',
     },
 });

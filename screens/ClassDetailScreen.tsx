@@ -5,12 +5,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-import { studentService, sessionService } from '../services';
-import { Student, Session } from '../types';
+import { studentService, sessionService, evaluationService } from '../services';
+import { Student, Session, Evaluation } from '../types';
 import StudentFormDialog from '../components/StudentFormDialog';
 import SessionFormDialog from '../components/SessionFormDialog';
 import SpeedDialFAB from '../components/SpeedDialFAB';
 import { useTheme } from '../contexts/ThemeContext';
+import { EVALUATION_TYPE_LABELS, NOTATION_SYSTEM_LABELS } from '../types/evaluation';
 
 type ClassDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ClassDetail'>;
 type ClassDetailScreenRouteProp = RouteProp<RootStackParamList, 'ClassDetail'>;
@@ -25,6 +26,7 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
     const { classId, className, classColor } = route.params;
     const [students, setStudents] = useState<Student[]>([]);
     const [sessions, setSessions] = useState<Session[]>([]);
+    const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
     const [loading, setLoading] = useState(true);
     const [showStudentDialog, setShowStudentDialog] = useState(false);
     const [showSessionDialog, setShowSessionDialog] = useState(false);
@@ -42,12 +44,14 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
 
     const loadData = async () => {
         try {
-            const [studentsData, sessionsData] = await Promise.all([
+            const [studentsData, sessionsData, evaluationsData] = await Promise.all([
                 studentService.getByClass(classId),
                 sessionService.getByClass(classId),
+                evaluationService.getByClassId(classId),
             ]);
             setStudents(studentsData);
             setSessions(sessionsData);
+            setEvaluations(evaluationsData);
         } catch (error) {
             console.error('Error:', error);
         } finally {
@@ -212,6 +216,101 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                     <Text style={[styles.viewAllText, { color: classColor }]}>
                                         Voir toutes les séances ({sessions.length}) →
                                     </Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    )}
+                </View>
+
+                {/* Evaluations Section */}
+                <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                        <Text style={[styles.sectionTitle, { color: theme.text }]}>Évaluations</Text>
+                        <Text style={[styles.sectionCount, { color: theme.textTertiary, backgroundColor: theme.surfaceVariant }]}>{evaluations.length}</Text>
+                    </View>
+
+                    {evaluations.length === 0 ? (
+                        <View style={[styles.emptyCard, { backgroundColor: theme.cardBackground }]}>
+                            <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Aucune évaluation créée</Text>
+                            <TouchableOpacity
+                                style={[styles.addButton, { backgroundColor: classColor }]}
+                                onPress={() => navigation.navigate('EvaluationsList', { classId })}
+                            >
+                                <Text style={styles.addButtonText}>Créer une évaluation</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View>
+                            {evaluations.slice(0, 3).map((evaluation) => (
+                                <TouchableOpacity
+                                    key={evaluation.id}
+                                    style={[styles.itemCard, { backgroundColor: theme.cardBackground }]}
+                                    onPress={() => navigation.navigate('EvaluationDetail', { evaluationId: evaluation.id })}
+                                >
+                                    <View style={styles.evaluationHeader}>
+                                        <View style={styles.evaluationTitleRow}>
+                                            <Text style={[styles.itemName, { color: theme.text }]}>
+                                                {evaluation.titre}
+                                            </Text>
+                                            {evaluation.sessionId && (
+                                                <MaterialCommunityIcons 
+                                                    name="link-variant" 
+                                                    size={16} 
+                                                    color={theme.textSecondary}
+                                                    style={{ marginLeft: 4 }}
+                                                />
+                                            )}
+                                        </View>
+                                        <View style={styles.evaluationBadges}>
+                                            <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+                                                <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+                                                    {EVALUATION_TYPE_LABELS[evaluation.type]}
+                                                </Text>
+                                            </View>
+                                            <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+                                                <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+                                                    {NOTATION_SYSTEM_LABELS[evaluation.notationSystem]}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                    <Text style={[styles.evaluationDate, { color: theme.textTertiary }]}>
+                                        {new Date(evaluation.date).toLocaleDateString('fr-FR', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric',
+                                        })}
+                                    </Text>
+                                    <View style={styles.evaluationFooter}>
+                                        <View style={styles.evaluationCompetences}>
+                                            <MaterialCommunityIcons 
+                                                name="star-box-multiple" 
+                                                size={14} 
+                                                color={theme.textTertiary}
+                                            />
+                                            <Text style={[styles.evaluationCompetencesText, { color: theme.textTertiary }]}>
+                                                {evaluation.competenceIds.length} compétence{evaluation.competenceIds.length > 1 ? 's' : ''}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            ))}
+                            {evaluations.length > 3 && (
+                                <TouchableOpacity
+                                    style={styles.viewAllButton}
+                                    onPress={() => navigation.navigate('EvaluationsList', { classId })}
+                                >
+                                    <Text style={[styles.viewAllText, { color: classColor }]}>
+                                        Voir toutes les évaluations ({evaluations.length})
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+                            {evaluations.length <= 3 && evaluations.length > 0 && (
+                                <TouchableOpacity
+                                    style={[styles.addButton, styles.addButtonSecondary, { borderColor: classColor }]}
+                                    onPress={() => navigation.navigate('EvaluationsList', { classId })}
+                                >
+                                    <Text style={[styles.addButtonTextSecondary, { color: classColor }]}>+ Créer une évaluation</Text>
                                 </TouchableOpacity>
                             )}
                         </View>
@@ -419,5 +518,42 @@ const styles = StyleSheet.create({
     addButtonTextSecondary: {
         fontWeight: '600',
         fontSize: 15,
+    },
+    evaluationHeader: {
+        marginBottom: 8,
+    },
+    evaluationTitleRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    evaluationBadges: {
+        flexDirection: 'row',
+        gap: 8,
+    },
+    evaluationBadge: {
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+    },
+    evaluationBadgeText: {
+        fontSize: 11,
+        fontWeight: '600',
+    },
+    evaluationDate: {
+        fontSize: 13,
+        marginBottom: 8,
+    },
+    evaluationFooter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    evaluationCompetences: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+    },
+    evaluationCompetencesText: {
+        fontSize: 12,
     },
 });
