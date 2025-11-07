@@ -3,3 +3,6 @@ export * from './student';
 export * from './session';
 export * from './settings';
 export * from './attendance';
+export * from './competence';
+export * from './evaluation';
+export * from './evaluationResult';

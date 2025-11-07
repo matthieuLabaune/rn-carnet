@@ -73,6 +73,61 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
 
     CREATE INDEX IF NOT EXISTS idx_attendances_session_id ON attendances(session_id);
     CREATE INDEX IF NOT EXISTS idx_attendances_student_id ON attendances(student_id);
+
+    CREATE TABLE IF NOT EXISTS competences (
+      id TEXT PRIMARY KEY NOT NULL,
+      nom TEXT NOT NULL,
+      description TEXT,
+      domaine TEXT NOT NULL,
+      couleur TEXT NOT NULL,
+      is_predefined INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_competences_domaine ON competences(domaine);
+    CREATE INDEX IF NOT EXISTS idx_competences_is_predefined ON competences(is_predefined);
+
+    CREATE TABLE IF NOT EXISTS evaluations (
+      id TEXT PRIMARY KEY NOT NULL,
+      class_id TEXT NOT NULL,
+      session_id TEXT,
+      titre TEXT NOT NULL,
+      date TEXT NOT NULL,
+      type TEXT NOT NULL,
+      notation_system TEXT NOT NULL,
+      max_points INTEGER,
+      competence_ids TEXT NOT NULL,
+      description TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+      FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_evaluations_class_id ON evaluations(class_id);
+    CREATE INDEX IF NOT EXISTS idx_evaluations_session_id ON evaluations(session_id);
+    CREATE INDEX IF NOT EXISTS idx_evaluations_date ON evaluations(date);
+
+    CREATE TABLE IF NOT EXISTS evaluation_results (
+      id TEXT PRIMARY KEY NOT NULL,
+      evaluation_id TEXT NOT NULL,
+      student_id TEXT NOT NULL,
+      competence_id TEXT NOT NULL,
+      niveau TEXT,
+      score REAL,
+      commentaire TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (evaluation_id) REFERENCES evaluations(id) ON DELETE CASCADE,
+      FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+      FOREIGN KEY (competence_id) REFERENCES competences(id) ON DELETE CASCADE,
+      UNIQUE(evaluation_id, student_id, competence_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_evaluation_results_evaluation_id ON evaluation_results(evaluation_id);
+    CREATE INDEX IF NOT EXISTS idx_evaluation_results_student_id ON evaluation_results(student_id);
+    CREATE INDEX IF NOT EXISTS idx_evaluation_results_competence_id ON evaluation_results(competence_id);
   `);
 
     // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
@@ -107,6 +162,10 @@ export const closeDatabase = async (): Promise<void> => {
 export const resetDatabase = async (): Promise<void> => {
     const database = getDatabase();
     await database.execAsync(`
+    DROP TABLE IF EXISTS evaluation_results;
+    DROP TABLE IF EXISTS evaluations;
+    DROP TABLE IF EXISTS competences;
+    DROP TABLE IF EXISTS attendances;
     DROP TABLE IF EXISTS sessions;
     DROP TABLE IF EXISTS students;
     DROP TABLE IF EXISTS classes;
