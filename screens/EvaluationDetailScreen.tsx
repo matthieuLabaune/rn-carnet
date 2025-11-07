@@ -3,7 +3,7 @@
  * Grading grid for students × competences
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Alert,
+  TextInput as RNTextInput,
 } from 'react-native';
 import { Text, Button, Portal, Dialog, TextInput, RadioButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -51,7 +52,13 @@ export default function EvaluationDetailScreen() {
   const [results, setResults] = useState<EvaluationResult[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Grading dialog state
+  // Cell editing state
+  const [editingCell, setEditingCell] = useState<{ studentId: string; competenceId: string } | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const [savingCell, setSavingCell] = useState<{ studentId: string; competenceId: string } | null>(null);
+  const inputRefs = useRef<{ [key: string]: RNTextInput | null }>({});
+  
+  // Grading dialog state (kept for niveaux system)
   const [dialogVisible, setDialogVisible] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedCompetence, setSelectedCompetence] = useState<Competence | null>(null);
@@ -168,11 +175,103 @@ export default function EvaluationDetailScreen() {
     return results.find(r => r.studentId === studentId && r.competenceId === competenceId);
   };
 
+  const handleCellPress = (student: Student, competence: Competence) => {
+    if (!evaluation) return;
+
+    // For niveaux system, use dialog
+    if (evaluation.notationSystem === 'niveaux') {
+      openGradingDialog(student, competence);
+      return;
+    }
+
+    // For points system, enable inline editing
+    const cellKey = `${student.id}_${competence.id}`;
+    const result = getResult(student.id, competence.id);
+    
+    setEditingCell({ studentId: student.id, competenceId: competence.id });
+    setEditValue(result?.score?.toString() || '');
+    
+    // Focus input after state update
+    setTimeout(() => {
+      inputRefs.current[cellKey]?.focus();
+    }, 100);
+  };
+
+  const handleCellBlur = async (studentId: string, competenceId: string) => {
+    if (!evaluation) return;
+
+    const trimmedValue = editValue.trim();
+    
+    // If empty, delete the result
+    if (trimmedValue === '') {
+      const result = getResult(studentId, competenceId);
+      if (result) {
+        try {
+          setSavingCell({ studentId, competenceId });
+          await evaluationResultService.delete(result.id);
+          await loadData();
+        } catch (error) {
+          console.error('Failed to delete grade:', error);
+          Alert.alert('Erreur', 'Impossible de supprimer la note');
+        } finally {
+          setSavingCell(null);
+        }
+      }
+      setEditingCell(null);
+      return;
+    }
+
+    // Validate score
+    const score = parseFloat(trimmedValue);
+    if (isNaN(score)) {
+      Alert.alert('Erreur', 'Le score doit être un nombre');
+      setEditingCell(null);
+      return;
+    }
+    if (score < 0) {
+      Alert.alert('Erreur', 'Le score ne peut pas être négatif');
+      setEditingCell(null);
+      return;
+    }
+    if (evaluation.maxPoints && score > evaluation.maxPoints) {
+      Alert.alert('Erreur', `Le score ne peut pas dépasser ${evaluation.maxPoints}`);
+      setEditingCell(null);
+      return;
+    }
+
+    // Save the result
+    const existingResult = getResult(studentId, competenceId);
+    const resultData: Omit<EvaluationResult, 'createdAt' | 'updatedAt'> = {
+      id: existingResult?.id || `result_${Date.now()}`,
+      evaluationId: evaluation.id,
+      studentId,
+      competenceId,
+      score,
+      commentaire: existingResult?.commentaire,
+    };
+
+    try {
+      setSavingCell({ studentId, competenceId });
+      await evaluationResultService.upsert(resultData);
+      await loadData();
+    } catch (error) {
+      console.error('Failed to save grade:', error);
+      Alert.alert('Erreur', 'Impossible d\'enregistrer la note');
+    } finally {
+      setSavingCell(null);
+      setEditingCell(null);
+    }
+  };
+
   const renderCellContent = (studentId: string, competenceId: string) => {
     const result = getResult(studentId, competenceId);
-    if (!result || !evaluation) return null;
+    const cellKey = `${studentId}_${competenceId}`;
+    const isEditing = editingCell?.studentId === studentId && editingCell?.competenceId === competenceId;
+    const isSaving = savingCell?.studentId === studentId && savingCell?.competenceId === competenceId;
+    
+    if (!evaluation) return null;
 
-    if (evaluation.notationSystem === 'niveaux' && result.niveau) {
+    if (evaluation.notationSystem === 'niveaux' && result?.niveau) {
       const color = NIVEAU_COLORS[result.niveau];
       return (
         <View style={[styles.cellContent, { backgroundColor: color + '20' }]}>
@@ -183,12 +282,34 @@ export default function EvaluationDetailScreen() {
           />
         </View>
       );
-    } else if (evaluation.notationSystem === 'points' && result.score !== undefined) {
+    } else if (evaluation.notationSystem === 'points') {
+      // Editable input for points system
       return (
         <View style={styles.cellContent}>
-          <Text style={[styles.scoreText, { color: theme.text }]}>
-            {result.score}
-          </Text>
+          {isSaving ? (
+            <MaterialCommunityIcons name="loading" size={16} color={theme.primary} />
+          ) : (
+            <RNTextInput
+              ref={(ref) => { inputRefs.current[cellKey] = ref; }}
+              style={[
+                styles.cellInput,
+                { color: theme.text },
+                isEditing && styles.cellInputEditing,
+              ]}
+              value={isEditing ? editValue : (result?.score?.toString() || '')}
+              onChangeText={setEditValue}
+              onFocus={() => {
+                setEditingCell({ studentId, competenceId });
+                setEditValue(result?.score?.toString() || '');
+              }}
+              onBlur={() => handleCellBlur(studentId, competenceId)}
+              keyboardType="decimal-pad"
+              selectTextOnFocus
+              placeholder={isEditing ? '' : '—'}
+              placeholderTextColor={theme.textTertiary}
+              returnKeyType="done"
+            />
+          )}
         </View>
       );
     }
@@ -303,7 +424,8 @@ export default function EvaluationDetailScreen() {
                   <TouchableOpacity
                     key={comp.id}
                     style={[styles.cell, styles.competenceCell]}
-                    onPress={() => openGradingDialog(student, comp)}
+                    onPress={() => handleCellPress(student, comp)}
+                    activeOpacity={evaluation.notationSystem === 'points' ? 1 : 0.7}
                   >
                     {renderCellContent(student.id, comp.id)}
                   </TouchableOpacity>
@@ -499,6 +621,20 @@ const styles = StyleSheet.create({
   },
   cellContent: {
     padding: 4,
+    borderRadius: 4,
+    width: '100%',
+    alignItems: 'center',
+  },
+  cellInput: {
+    width: '100%',
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: 'bold',
+    padding: 4,
+    minHeight: 30,
+  },
+  cellInputEditing: {
+    backgroundColor: 'rgba(33, 150, 243, 0.1)',
     borderRadius: 4,
   },
   scoreText: {
