@@ -143,6 +143,15 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
         // Les colonnes existent déjà, ignorer l'erreur
     }
 
+    // Migration: Ajouter is_homework aux évaluations
+    try {
+        await db.execAsync(`
+      ALTER TABLE evaluations ADD COLUMN is_homework INTEGER NOT NULL DEFAULT 0;
+    `);
+    } catch (error) {
+        // La colonne existe déjà, ignorer l'erreur
+    }
+
     return db;
 };
 
