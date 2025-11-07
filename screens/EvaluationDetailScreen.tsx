@@ -79,11 +79,24 @@ export default function EvaluationDetailScreen() {
         return;
       }
       
+      console.log('📊 Evaluation loaded:', {
+        id: evaluation.id,
+        titre: evaluation.titre,
+        competenceIds: evaluation.competenceIds,
+        competenceCount: evaluation.competenceIds.length,
+      });
+      
       const [studs, comps, res] = await Promise.all([
         studentService.getByClass(evaluation.classId),
         competenceService.getByIds(evaluation.competenceIds),
         evaluationResultService.getByEvaluationId(evaluationId),
       ]);
+      
+      console.log('📚 Competences loaded:', {
+        requested: evaluation.competenceIds.length,
+        found: comps.length,
+        competences: comps.map(c => ({ id: c.id, nom: c.nom })),
+      });
       
       setEvaluation(evaluation);
       setStudents(studs);
