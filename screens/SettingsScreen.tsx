@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '../contexts/ThemeContext';
 import { seedDatabase, TeacherType } from '../utils/seedData';
+import { resetDatabase } from '../services/database';
 import { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -80,7 +81,38 @@ export default function SettingsScreen() {
             'Cette action est irréversible. Voulez-vous continuer ?',
             [
                 { text: 'Annuler', style: 'cancel' },
-                { text: 'Effacer', style: 'destructive', onPress: () => { } },
+                { 
+                    text: 'Effacer', 
+                    style: 'destructive', 
+                    onPress: async () => {
+                        try {
+                            await resetDatabase();
+                            Alert.alert(
+                                'Succès',
+                                'Toutes les données ont été effacées. L\'application va redémarrer.',
+                                [
+                                    { 
+                                        text: 'OK',
+                                        onPress: () => {
+                                            // Navigate to home to refresh
+                                            navigation.reset({
+                                                index: 0,
+                                                routes: [{ name: 'MainTabs' }],
+                                            });
+                                        }
+                                    }
+                                ]
+                            );
+                        } catch (error) {
+                            console.error('Error clearing database:', error);
+                            Alert.alert(
+                                'Erreur',
+                                'Impossible d\'effacer les données',
+                                [{ text: 'OK' }]
+                            );
+                        }
+                    }
+                },
             ]
         );
     };
