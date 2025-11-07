@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet, TouchableOpacity, StatusBar, Animated } from 'react-native';
-import { Text, FAB } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { classService } from '../services';
 import { Class } from '../types';
 import { RootStackParamList } from '../navigation/types';
 import ClassFormDialog from '../components/ClassFormDialog';
+import CustomFAB from '../components/CustomFAB';
 import { useTheme } from '../contexts/ThemeContext';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ClassDetail'>;
@@ -151,13 +152,11 @@ export default function HomeScreen({ navigation }: Props) {
                 </Animated.View>
             )}
 
-            <TouchableOpacity
-                style={[styles.fab, { backgroundColor: theme.primary }]}
+            <CustomFAB
+                icon="plus"
                 onPress={handleCreateClass}
-                activeOpacity={0.8}
-            >
-                <MaterialCommunityIcons name="plus" size={28} color="#ffffff" />
-            </TouchableOpacity>
+                backgroundColor={theme.primary}
+            />
 
             <ClassFormDialog
                 visible={showDialog}
@@ -313,26 +312,5 @@ const styles = StyleSheet.create({
     classSubject: {
         fontSize: 14,
         color: '#666',
-    },
-    fab: {
-        position: 'absolute',
-        right: 24,
-        bottom: 24,
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        backgroundColor: '#000',
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 8,
-    },
-    fabText: {
-        fontSize: 28,
-        color: '#fff',
-        fontWeight: '300',
     },
 });

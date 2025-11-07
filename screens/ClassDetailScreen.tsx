@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
@@ -8,6 +9,7 @@ import { studentService, sessionService } from '../services';
 import { Student, Session } from '../types';
 import StudentFormDialog from '../components/StudentFormDialog';
 import SessionFormDialog from '../components/SessionFormDialog';
+import SpeedDialFAB from '../components/SpeedDialFAB';
 import { useTheme } from '../contexts/ThemeContext';
 
 type ClassDetailScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'ClassDetail'>;
@@ -209,6 +211,22 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                     )}
                 </View>
             </ScrollView>
+
+            <SpeedDialFAB
+                backgroundColor={classColor}
+                actions={[
+                    {
+                        icon: 'account-plus',
+                        label: 'Ajouter un élève',
+                        onPress: () => setShowStudentDialog(true),
+                    },
+                    {
+                        icon: 'calendar-plus',
+                        label: 'Créer une séance',
+                        onPress: () => setShowSessionDialog(true),
+                    },
+                ]}
+            />
 
             <StudentFormDialog
                 visible={showStudentDialog}

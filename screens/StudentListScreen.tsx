@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity, StatusBar, TextInput, Alert } from 'react-native';
-import { Text, FAB } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import { RootStackParamList } from '../navigation/types';
 import { studentService } from '../services';
 import { Student } from '../types';
 import StudentFormDialog from '../components/StudentFormDialog';
+import CustomFAB from '../components/CustomFAB';
 import { useTheme } from '../contexts/ThemeContext';
 
 type StudentListScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'StudentList'>;
@@ -234,11 +235,10 @@ export default function StudentListScreen({ navigation, route }: Props) {
                 )}
             </ScrollView>
 
-            <FAB
+            <CustomFAB
                 icon="plus"
-                style={[styles.fab, { backgroundColor: classColor }]}
                 onPress={() => setShowStudentDialog(true)}
-                color="#ffffff"
+                backgroundColor={classColor}
             />
 
             <StudentFormDialog
@@ -401,11 +401,5 @@ const styles = StyleSheet.create({
         color: '#666',
         textAlign: 'center',
         lineHeight: 22,
-    },
-    fab: {
-        position: 'absolute',
-        margin: 16,
-        right: 0,
-        bottom: 0,
     },
 });
