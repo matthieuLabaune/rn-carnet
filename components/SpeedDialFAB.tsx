@@ -162,11 +162,13 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3,
+        minWidth: 120,
     },
     label: {
         fontSize: 14,
         fontWeight: '600',
         color: '#333',
+        textAlign: 'center',
     },
     backdrop: {
         position: 'absolute',
