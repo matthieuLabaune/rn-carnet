@@ -250,60 +250,60 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                                         onPress={() => navigation.navigate('EvaluationDetail', { evaluationId: evaluation.id })}
                                     >
                                         <View style={styles.evaluationHeader}>
-                                            <View style={styles.evaluationTitleRow}>
+                                            <View style={{ flex: 1 }}>
                                                 <Text style={[styles.itemName, { color: theme.text }]}>
                                                     {evaluation.titre}
                                                 </Text>
-                                                {evaluation.sessionId && (
-                                                    <TouchableOpacity
-                                                        onPress={async (e) => {
-                                                            e.stopPropagation();
-                                                            try {
-                                                                const session = await sessionService.getById(evaluation.sessionId!);
-                                                                if (session) {
-                                                                    navigation.navigate('SessionDetail', { sessionId: evaluation.sessionId! });
-                                                                }
-                                                            } catch (error) {
-                                                                console.error('Error navigating to session:', error);
+                                                <Text style={[styles.sessionDate, { color: theme.textTertiary }]}>
+                                                    {new Date(evaluation.date).toLocaleDateString('fr-FR', {
+                                                        day: 'numeric',
+                                                        month: 'long',
+                                                        year: 'numeric',
+                                                    })}
+                                                </Text>
+                                            </View>
+                                            {evaluation.sessionId && (
+                                                <TouchableOpacity
+                                                    onPress={async (e) => {
+                                                        e.stopPropagation();
+                                                        try {
+                                                            const session = await sessionService.getById(evaluation.sessionId!);
+                                                            if (session) {
+                                                                navigation.navigate('SessionDetail', { sessionId: evaluation.sessionId! });
                                                             }
-                                                        }}
-                                                        style={[styles.linkIconButton, { backgroundColor: theme.surfaceVariant }]}
-                                                    >
-                                                        <MaterialCommunityIcons 
-                                                            name="link-variant" 
-                                                            size={18} 
-                                                            color={theme.primary}
-                                                        />
-                                                    </TouchableOpacity>
-                                                )}
-                                            </View>
-                                            <View style={styles.evaluationBadges}>
-                                                <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
-                                                    <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
-                                                        {EVALUATION_TYPE_LABELS[evaluation.type]}
-                                                    </Text>
-                                                </View>
-                                                <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
-                                                    <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
-                                                        {NOTATION_SYSTEM_LABELS[evaluation.notationSystem]}
-                                                    </Text>
-                                                </View>
-                                                {evaluation.isHomework && (
-                                                    <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant, borderColor: theme.primary, borderWidth: 1 }]}>
-                                                        <Text style={[styles.evaluationBadgeText, { color: theme.primary }]}>
-                                                            DM
-                                                        </Text>
-                                                    </View>
-                                                )}
-                                            </View>
+                                                        } catch (error) {
+                                                            console.error('Error navigating to session:', error);
+                                                        }
+                                                    }}
+                                                    style={[styles.linkIconButton, { backgroundColor: theme.surfaceVariant }]}
+                                                >
+                                                    <MaterialCommunityIcons 
+                                                        name="link-variant" 
+                                                        size={18} 
+                                                        color={theme.primary}
+                                                    />
+                                                </TouchableOpacity>
+                                            )}
                                         </View>
-                                        <Text style={[styles.evaluationDate, { color: theme.textTertiary }]}>
-                                        {new Date(evaluation.date).toLocaleDateString('fr-FR', {
-                                            day: 'numeric',
-                                            month: 'long',
-                                            year: 'numeric',
-                                        })}
-                                    </Text>
+                                        <View style={styles.evaluationBadges}>
+                                            <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+                                                <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+                                                    {EVALUATION_TYPE_LABELS[evaluation.type]}
+                                                </Text>
+                                            </View>
+                                            <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant }]}>
+                                                <Text style={[styles.evaluationBadgeText, { color: theme.textSecondary }]}>
+                                                    {NOTATION_SYSTEM_LABELS[evaluation.notationSystem]}
+                                                </Text>
+                                            </View>
+                                            {evaluation.isHomework && (
+                                                <View style={[styles.evaluationBadge, { backgroundColor: theme.surfaceVariant, borderColor: theme.primary, borderWidth: 1 }]}>
+                                                    <Text style={[styles.evaluationBadgeText, { color: theme.primary }]}>
+                                                        DM
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
                                         <View style={styles.evaluationFooter}>
                                             <View style={styles.evaluationCompetences}>
                                                 <MaterialCommunityIcons 
@@ -546,21 +546,19 @@ const styles = StyleSheet.create({
         fontSize: 15,
     },
     evaluationHeader: {
-        marginBottom: 8,
-    },
-    evaluationTitleRow: {
         flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 12,
     },
     linkIconButton: {
-        marginLeft: 8,
         padding: 8,
         borderRadius: 8,
     },
     evaluationBadges: {
         flexDirection: 'row',
         gap: 8,
+        marginBottom: 8,
     },
     evaluationBadge: {
         paddingHorizontal: 8,
@@ -571,13 +569,10 @@ const styles = StyleSheet.create({
         fontSize: 11,
         fontWeight: '600',
     },
-    evaluationDate: {
-        fontSize: 13,
-        marginBottom: 8,
-    },
     evaluationFooter: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginTop: 8,
     },
     evaluationCompetences: {
         flexDirection: 'row',
