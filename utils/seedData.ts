@@ -271,23 +271,42 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
 
         // 5️⃣ Seed Competences
         console.log('\n5️⃣ Seeding competences...');
-        const predefinedCompetences = getAllPredefinedCompetences();
-        const competencesToInsert = predefinedCompetences.map((c, index) => ({
-            id: `competence_${Date.now()}_${index}`,
-            nom: c.nom,
-            description: c.description,
-            domaine: c.domaine,
-            couleur: c.couleur,
-            isPredefined: true,
-        }));
-        await competenceService.bulkInsert(competencesToInsert);
-        console.log(`  ✓ Inserted ${competencesToInsert.length} predefined competences`);
+        
+        // Check if competences already exist
+        const existingCompetences = await competenceService.getAll();
+        
+        if (existingCompetences.length === 0) {
+            // Only insert if no competences exist
+            const predefinedCompetences = getAllPredefinedCompetences();
+            const competencesToInsert = predefinedCompetences.map((c, index) => ({
+                id: `competence_${Date.now()}_${index}`,
+                nom: c.nom,
+                description: c.description,
+                domaine: c.domaine,
+                couleur: c.couleur,
+                isPredefined: true,
+            }));
+            await competenceService.bulkInsert(competencesToInsert);
+            console.log(`  ✓ Inserted ${competencesToInsert.length} predefined competences`);
+        } else {
+            console.log(`  ℹ️ Competences already exist (${existingCompetences.length} found), skipping insertion`);
+        }
 
         // Get some competence IDs for evaluations
         const allCompetences = await competenceService.getAll();
+        console.log(`📊 Total competences in DB: ${allCompetences.length}`);
+        
         const mathCompetences = allCompetences.filter(c => c.domaine === 'mathematiques').slice(0, 3);
         const frenchCompetences = allCompetences.filter(c => c.domaine === 'francais').slice(0, 3);
         const scienceCompetences = allCompetences.filter(c => c.domaine === 'sciences').slice(0, 2);
+
+        console.log(`📐 Math competences: ${mathCompetences.length} - IDs: ${mathCompetences.map(c => c.id).join(', ')}`);
+        console.log(`📝 French competences: ${frenchCompetences.length} - IDs: ${frenchCompetences.map(c => c.id).join(', ')}`);
+        console.log(`🔬 Science competences: ${scienceCompetences.length} - IDs: ${scienceCompetences.map(c => c.id).join(', ')}`);
+
+        if (mathCompetences.length === 0 || frenchCompetences.length === 0 || scienceCompetences.length === 0) {
+            console.warn('⚠️ Warning: Not enough competences found for evaluations!');
+        }
 
         // 6️⃣ Seed Evaluations
         console.log('\n6️⃣ Seeding evaluations...');
@@ -410,7 +429,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         console.log(`   - ${totalStudents} students`);
         console.log(`   - ${totalSessions} sessions`);
         console.log(`   - ${totalAttendances} attendances`);
-        console.log(`   - ${competencesToInsert.length} competences`);
+        console.log(`   - ${allCompetences.length} competences`);
         console.log(`   - ${totalEvaluations} evaluations`);
         console.log(`   - ${totalResults} evaluation results`);
 
@@ -419,7 +438,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
             totalStudents,
             totalSessions,
             totalAttendances,
-            totalCompetences: competencesToInsert.length,
+            totalCompetences: allCompetences.length,
             totalEvaluations,
             totalResults,
         };
