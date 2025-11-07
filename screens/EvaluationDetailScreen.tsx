@@ -336,6 +336,24 @@ export default function EvaluationDetailScreen() {
     return Math.round((results.length / total) * 100);
   };
 
+  const getStudentTotal = (studentId: string): number => {
+    if (!evaluation || evaluation.notationSystem !== 'points') return 0;
+    
+    let total = 0;
+    for (const comp of competences) {
+      const result = getResult(studentId, comp.id!);
+      if (result?.score !== undefined) {
+        total += result.score;
+      }
+    }
+    return total;
+  };
+
+  const getMaxTotal = (): number => {
+    if (!evaluation || evaluation.notationSystem !== 'points') return 0;
+    return (evaluation.maxPoints || 0) * competences.length;
+  };
+
   if (!evaluation) {
     return (
       <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -403,6 +421,16 @@ export default function EvaluationDetailScreen() {
               <View style={[styles.headerCell, styles.nameCell, { backgroundColor: theme.surface }]}>
                 <Text style={[styles.headerText, { color: theme.text }]}>Élève</Text>
               </View>
+              {evaluation.notationSystem === 'points' && (
+                <View style={[styles.headerCell, styles.totalCell, { backgroundColor: theme.primary }]}>
+                  <Text style={[styles.headerText, { color: '#FFFFFF', fontWeight: 'bold' }]}>
+                    Total
+                  </Text>
+                  <Text style={[styles.totalSubtext, { color: 'rgba(255,255,255,0.9)' }]}>
+                    /{getMaxTotal()}
+                  </Text>
+                </View>
+              )}
               {competences.map(comp => (
                 <View
                   key={comp.id}
@@ -433,6 +461,16 @@ export default function EvaluationDetailScreen() {
                     {student.firstName} {student.lastName}
                   </Text>
                 </View>
+                {evaluation.notationSystem === 'points' && (
+                  <View style={[styles.cell, styles.totalCell, { backgroundColor: theme.surfaceVariant }]}>
+                    <Text style={[styles.totalText, { color: theme.text }]}>
+                      {getStudentTotal(student.id)}
+                    </Text>
+                    <Text style={[styles.totalMaxText, { color: theme.textSecondary }]}>
+                      /{getMaxTotal()}
+                    </Text>
+                  </View>
+                )}
                 {competences.map(comp => (
                   <TouchableOpacity
                     key={comp.id}
@@ -614,6 +652,24 @@ const styles = StyleSheet.create({
     width: 150,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
+  },
+  totalCell: {
+    width: 80,
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  totalText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  totalMaxText: {
+    fontSize: 10,
+    marginTop: 2,
+  },
+  totalSubtext: {
+    fontSize: 10,
+    marginTop: 2,
   },
   competenceCell: {
     width: 100,

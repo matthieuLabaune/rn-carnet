@@ -20,6 +20,7 @@ import {
   RadioButton,
   Chip,
   Divider,
+  Switch,
 } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -275,20 +276,21 @@ export default function EvaluationFormDialog({
             <Divider style={styles.divider} />
 
             {/* Link to Session */}
-            <View style={styles.checkboxRow}>
-              <TouchableOpacity
-                onPress={() => setLinkedToSession(!linkedToSession)}
-                style={styles.checkbox}
-              >
-                <MaterialCommunityIcons
-                  name={linkedToSession ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                  size={24}
-                  color={theme.primary}
-                />
-                <Text style={[styles.checkboxLabel, { color: theme.text }]}>
+            <View style={styles.switchRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.switchLabel, { color: theme.text }]}>
                   Lier à une séance
                 </Text>
-              </TouchableOpacity>
+                {linkedToSession && (
+                  <Text style={[styles.helperText, { color: theme.textSecondary }]}>
+                    Associer cette évaluation à une séance
+                  </Text>
+                )}
+              </View>
+              <Switch
+                value={linkedToSession}
+                onValueChange={setLinkedToSession}
+              />
             </View>
 
             {linkedToSession && (
@@ -343,26 +345,19 @@ export default function EvaluationFormDialog({
             <Divider style={styles.divider} />
 
             {/* Devoir maison / en classe */}
-            <Text style={[styles.label, { color: theme.text }]}>Type de travail</Text>
-            <View style={styles.checkboxContainer}>
-              <TouchableOpacity
-                onPress={() => setIsHomework(!isHomework)}
-                style={styles.checkboxRow}
-              >
-                <MaterialCommunityIcons
-                  name={isHomework ? 'checkbox-marked' : 'checkbox-blank-outline'}
-                  size={24}
-                  color={theme.primary}
-                />
-                <Text style={[styles.checkboxLabel, { color: theme.text }]}>
+            <View style={styles.switchRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.switchLabel, { color: theme.text }]}>
                   Devoir maison
                 </Text>
-              </TouchableOpacity>
-              {!isHomework && (
                 <Text style={[styles.helperText, { color: theme.textSecondary }]}>
-                  Évaluation en classe
+                  {isHomework ? 'À faire à la maison' : 'Évaluation en classe'}
                 </Text>
-              )}
+              </View>
+              <Switch
+                value={isHomework}
+                onValueChange={setIsHomework}
+              />
             </View>
 
             <Divider style={styles.divider} />
@@ -493,6 +488,18 @@ const styles = StyleSheet.create({
   divider: {
     marginVertical: 16,
   },
+  switchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    gap: 12,
+  },
+  switchLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
   checkboxContainer: {
     marginBottom: 12,
   },
@@ -508,9 +515,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   helperText: {
-    fontSize: 14,
-    fontStyle: 'italic',
-    marginLeft: 32,
+    fontSize: 13,
+    marginTop: 4,
   },
   selectorContainer: {
     maxHeight: 250,
