@@ -129,6 +129,25 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
     CREATE INDEX IF NOT EXISTS idx_evaluation_results_evaluation_id ON evaluation_results(evaluation_id);
     CREATE INDEX IF NOT EXISTS idx_evaluation_results_student_id ON evaluation_results(student_id);
     CREATE INDEX IF NOT EXISTS idx_evaluation_results_competence_id ON evaluation_results(competence_id);
+
+    CREATE TABLE IF NOT EXISTS schedule_slots (
+      id TEXT PRIMARY KEY NOT NULL,
+      class_id TEXT NOT NULL,
+      day_of_week INTEGER NOT NULL,
+      start_time TEXT NOT NULL,
+      duration INTEGER NOT NULL,
+      subject TEXT NOT NULL,
+      frequency TEXT NOT NULL,
+      start_week INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+      CHECK (day_of_week >= 1 AND day_of_week <= 7),
+      CHECK (frequency IN ('weekly', 'biweekly')),
+      CHECK (start_week IS NULL OR start_week IN (0, 1))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_schedule_slots_class_id ON schedule_slots(class_id);
+    CREATE INDEX IF NOT EXISTS idx_schedule_slots_day_of_week ON schedule_slots(day_of_week);
   `);
 
     // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
@@ -177,6 +196,7 @@ export const resetDatabase = async (): Promise<void> => {
     DROP TABLE IF EXISTS competences;
     DROP TABLE IF EXISTS attendances;
     DROP TABLE IF EXISTS sessions;
+    DROP TABLE IF EXISTS schedule_slots;
     DROP TABLE IF EXISTS students;
     DROP TABLE IF EXISTS classes;
   `);
