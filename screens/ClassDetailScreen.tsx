@@ -169,7 +169,7 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                 <View style={styles.section}>
                     <TouchableOpacity
                         style={[styles.scheduleCard, { backgroundColor: theme.cardBackground }]}
-                        onPress={() => navigation.navigate('ScheduleManagement', { classId, className })}
+                        onPress={() => navigation.navigate('ScheduleManagement', { classId, className, classColor })}
                     >
                         <View style={styles.scheduleIconContainer}>
                             <MaterialCommunityIcons name="calendar-clock" size={32} color={classColor} />
@@ -572,8 +572,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderRadius: 12,
         padding: 16,
-        borderLeftWidth: 6,
-        borderLeftColor: '#007AFF',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
@@ -584,7 +582,6 @@ const styles = StyleSheet.create({
         width: 56,
         height: 56,
         borderRadius: 28,
-        backgroundColor: '#E3F2FD',
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 16,
