@@ -19,7 +19,7 @@ export default function SettingsScreen() {
     const { theme, themeMode, setThemeMode, isDark } = useTheme();
     const [notifications, setNotifications] = React.useState(true);
     const [isSeeding, setIsSeeding] = React.useState(false);
-    
+
     // School year settings
     const [schoolYearSettings, setSchoolYearSettings] = React.useState<SchoolYearSettings>({
         zone: 'A',
@@ -223,11 +223,11 @@ export default function SettingsScreen() {
                     {/* Zone scolaire */}
                     <View style={[styles.settingRow, { backgroundColor: theme.cardBackground }]}>
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons 
-                                name="map-marker" 
-                                size={24} 
-                                color={theme.textSecondary} 
-                                style={styles.settingIcon} 
+                            <MaterialCommunityIcons
+                                name="map-marker"
+                                size={24}
+                                color={theme.textSecondary}
+                                style={styles.settingIcon}
                             />
                             <View style={{ flex: 1 }}>
                                 <Text style={[styles.settingLabel, { color: theme.text }]}>Zone</Text>
@@ -245,24 +245,24 @@ export default function SettingsScreen() {
                                 key={zone}
                                 style={[
                                     styles.zoneButton,
-                                    { 
-                                        backgroundColor: schoolYearSettings.zone === zone 
-                                            ? theme.primary 
+                                    {
+                                        backgroundColor: schoolYearSettings.zone === zone
+                                            ? theme.primary
                                             : theme.cardBackground,
-                                        borderColor: schoolYearSettings.zone === zone 
-                                            ? theme.primary 
+                                        borderColor: schoolYearSettings.zone === zone
+                                            ? theme.primary
                                             : theme.border,
                                     }
                                 ]}
                                 onPress={() => handleZoneChange(zone)}
                             >
-                                <Text 
+                                <Text
                                     style={[
                                         styles.zoneButtonText,
-                                        { 
-                                            color: schoolYearSettings.zone === zone 
-                                                ? '#FFFFFF' 
-                                                : theme.text 
+                                        {
+                                            color: schoolYearSettings.zone === zone
+                                                ? '#FFFFFF'
+                                                : theme.text
                                         }
                                     ]}
                                 >
@@ -278,11 +278,11 @@ export default function SettingsScreen() {
                         onPress={() => setShowStartDatePicker(true)}
                     >
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons 
-                                name="calendar-start" 
-                                size={24} 
-                                color={theme.textSecondary} 
-                                style={styles.settingIcon} 
+                            <MaterialCommunityIcons
+                                name="calendar-start"
+                                size={24}
+                                color={theme.textSecondary}
+                                style={styles.settingIcon}
                             />
                             <View>
                                 <Text style={[styles.settingLabel, { color: theme.text }]}>Début année scolaire</Text>
@@ -314,11 +314,11 @@ export default function SettingsScreen() {
                         onPress={() => setShowEndDatePicker(true)}
                     >
                         <View style={styles.settingInfo}>
-                            <MaterialCommunityIcons 
-                                name="calendar-end" 
-                                size={24} 
-                                color={theme.textSecondary} 
-                                style={styles.settingIcon} 
+                            <MaterialCommunityIcons
+                                name="calendar-end"
+                                size={24}
+                                color={theme.textSecondary}
+                                style={styles.settingIcon}
                             />
                             <View>
                                 <Text style={[styles.settingLabel, { color: theme.text }]}>Fin année scolaire</Text>

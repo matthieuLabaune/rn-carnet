@@ -4,202 +4,202 @@ import { getDatabase } from './database';
 const generateId = () => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
 export const sessionService = {
-  async getByClass(classId: string): Promise<Session[]> {
-    const db = getDatabase();
-    
-    const sessions = await db.getAllAsync<any>(
-      'SELECT * FROM sessions WHERE class_id = ? ORDER BY date DESC, created_at DESC',
-      [classId]
-    );
+    async getByClass(classId: string): Promise<Session[]> {
+        const db = getDatabase();
 
-    return sessions.map(s => ({
-      id: s.id,
-      classId: s.class_id,
-      subject: s.subject,
-      description: s.description,
-      date: s.date,
-      duration: s.duration,
-      status: s.status,
-      timerPreset: s.timer_preset ? JSON.parse(s.timer_preset) : undefined,
-      createdAt: s.created_at || new Date().toISOString(),
-      completedAt: s.completed_at || undefined,
-    }));
-  },
+        const sessions = await db.getAllAsync<any>(
+            'SELECT * FROM sessions WHERE class_id = ? ORDER BY date DESC, created_at DESC',
+            [classId]
+        );
 
-  async getAll(): Promise<Session[]> {
-    const db = getDatabase();
-    
-    const sessions = await db.getAllAsync<any>(
-      'SELECT * FROM sessions ORDER BY date DESC, created_at DESC'
-    );
+        return sessions.map(s => ({
+            id: s.id,
+            classId: s.class_id,
+            subject: s.subject,
+            description: s.description,
+            date: s.date,
+            duration: s.duration,
+            status: s.status,
+            timerPreset: s.timer_preset ? JSON.parse(s.timer_preset) : undefined,
+            createdAt: s.created_at || new Date().toISOString(),
+            completedAt: s.completed_at || undefined,
+        }));
+    },
 
-    return sessions.map(s => ({
-      id: s.id,
-      classId: s.class_id,
-      subject: s.subject,
-      description: s.description,
-      date: s.date,
-      duration: s.duration,
-      status: s.status,
-      timerPreset: s.timer_preset ? JSON.parse(s.timer_preset) : undefined,
-      createdAt: s.created_at || new Date().toISOString(),
-      completedAt: s.completed_at || undefined,
-    }));
-  },
+    async getAll(): Promise<Session[]> {
+        const db = getDatabase();
 
-  async getById(id: string): Promise<Session | null> {
-    const db = getDatabase();
-    
-    const result = await db.getFirstAsync<any>(
-      'SELECT * FROM sessions WHERE id = ?',
-      [id]
-    );
+        const sessions = await db.getAllAsync<any>(
+            'SELECT * FROM sessions ORDER BY date DESC, created_at DESC'
+        );
 
-    if (!result) return null;
+        return sessions.map(s => ({
+            id: s.id,
+            classId: s.class_id,
+            subject: s.subject,
+            description: s.description,
+            date: s.date,
+            duration: s.duration,
+            status: s.status,
+            timerPreset: s.timer_preset ? JSON.parse(s.timer_preset) : undefined,
+            createdAt: s.created_at || new Date().toISOString(),
+            completedAt: s.completed_at || undefined,
+        }));
+    },
 
-    return {
-      id: result.id,
-      classId: result.class_id,
-      subject: result.subject,
-      description: result.description,
-      date: result.date,
-      duration: result.duration,
-      status: result.status,
-      timerPreset: result.timer_preset ? JSON.parse(result.timer_preset) : undefined,
-      createdAt: result.created_at || new Date().toISOString(),
-      completedAt: result.completed_at || undefined,
-    };
-  },
+    async getById(id: string): Promise<Session | null> {
+        const db = getDatabase();
 
-  async create(data: SessionFormData): Promise<Session> {
-    const db = getDatabase();
-    const id = generateId();
-    const now = new Date().toISOString();
+        const result = await db.getFirstAsync<any>(
+            'SELECT * FROM sessions WHERE id = ?',
+            [id]
+        );
 
-    await db.runAsync(
-      `INSERT INTO sessions (id, class_id, subject, description, date, duration, status, timer_preset, created_at)
+        if (!result) return null;
+
+        return {
+            id: result.id,
+            classId: result.class_id,
+            subject: result.subject,
+            description: result.description,
+            date: result.date,
+            duration: result.duration,
+            status: result.status,
+            timerPreset: result.timer_preset ? JSON.parse(result.timer_preset) : undefined,
+            createdAt: result.created_at || new Date().toISOString(),
+            completedAt: result.completed_at || undefined,
+        };
+    },
+
+    async create(data: SessionFormData): Promise<Session> {
+        const db = getDatabase();
+        const id = generateId();
+        const now = new Date().toISOString();
+
+        await db.runAsync(
+            `INSERT INTO sessions (id, class_id, subject, description, date, duration, status, timer_preset, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        id,
-        data.classId,
-        data.subject,
-        data.description || null,
-        data.date,
-        data.duration,
-        data.status,
-        data.timerPreset ? JSON.stringify(data.timerPreset) : null,
-        now,
-      ]
-    );
+            [
+                id,
+                data.classId,
+                data.subject,
+                data.description || null,
+                data.date,
+                data.duration,
+                data.status,
+                data.timerPreset ? JSON.stringify(data.timerPreset) : null,
+                now,
+            ]
+        );
 
-    const created = await this.getById(id);
-    if (!created) throw new Error('Failed to create session');
-    
-    return created;
-  },
+        const created = await this.getById(id);
+        if (!created) throw new Error('Failed to create session');
 
-  async update(id: string, data: Partial<SessionFormData>): Promise<Session> {
-    const db = getDatabase();
+        return created;
+    },
 
-    const existing = await this.getById(id);
-    if (!existing) throw new Error('Session not found');
+    async update(id: string, data: Partial<SessionFormData>): Promise<Session> {
+        const db = getDatabase();
 
-    const updates: string[] = [];
-    const values: any[] = [];
+        const existing = await this.getById(id);
+        if (!existing) throw new Error('Session not found');
 
-    if (data.subject !== undefined) {
-      updates.push('subject = ?');
-      values.push(data.subject);
-    }
-    if (data.description !== undefined) {
-      updates.push('description = ?');
-      values.push(data.description);
-    }
-    if (data.date !== undefined) {
-      updates.push('date = ?');
-      values.push(data.date);
-    }
-    if (data.duration !== undefined) {
-      updates.push('duration = ?');
-      values.push(data.duration);
-    }
-    if (data.status !== undefined) {
-      updates.push('status = ?');
-      values.push(data.status);
-    }
-    if (data.timerPreset !== undefined) {
-      updates.push('timer_preset = ?');
-      values.push(JSON.stringify(data.timerPreset));
-    }
+        const updates: string[] = [];
+        const values: any[] = [];
 
-    if (updates.length > 0) {
-      values.push(id);
+        if (data.subject !== undefined) {
+            updates.push('subject = ?');
+            values.push(data.subject);
+        }
+        if (data.description !== undefined) {
+            updates.push('description = ?');
+            values.push(data.description);
+        }
+        if (data.date !== undefined) {
+            updates.push('date = ?');
+            values.push(data.date);
+        }
+        if (data.duration !== undefined) {
+            updates.push('duration = ?');
+            values.push(data.duration);
+        }
+        if (data.status !== undefined) {
+            updates.push('status = ?');
+            values.push(data.status);
+        }
+        if (data.timerPreset !== undefined) {
+            updates.push('timer_preset = ?');
+            values.push(JSON.stringify(data.timerPreset));
+        }
 
-      await db.runAsync(
-        `UPDATE sessions SET ${updates.join(', ')} WHERE id = ?`,
-        values
-      );
-    }
+        if (updates.length > 0) {
+            values.push(id);
 
-    const updated = await this.getById(id);
-    if (!updated) throw new Error('Failed to update session');
-    
-    return updated;
-  },
+            await db.runAsync(
+                `UPDATE sessions SET ${updates.join(', ')} WHERE id = ?`,
+                values
+            );
+        }
 
-  async complete(id: string): Promise<Session> {
-    const db = getDatabase();
-    const now = new Date().toISOString();
+        const updated = await this.getById(id);
+        if (!updated) throw new Error('Failed to update session');
 
-    await db.runAsync(
-      'UPDATE sessions SET status = ?, completed_at = ? WHERE id = ?',
-      ['completed', now, id]
-    );
+        return updated;
+    },
 
-    const updated = await this.getById(id);
-    if (!updated) throw new Error('Failed to complete session');
-    
-    return updated;
-  },
+    async complete(id: string): Promise<Session> {
+        const db = getDatabase();
+        const now = new Date().toISOString();
 
-  async delete(id: string): Promise<void> {
-    const db = getDatabase();
-    await db.runAsync('DELETE FROM sessions WHERE id = ?', [id]);
-  },
+        await db.runAsync(
+            'UPDATE sessions SET status = ?, completed_at = ? WHERE id = ?',
+            ['completed', now, id]
+        );
 
-  async deleteByClass(classId: string): Promise<void> {
-    const db = getDatabase();
-    await db.runAsync('DELETE FROM sessions WHERE class_id = ?', [classId]);
-  },
+        const updated = await this.getById(id);
+        if (!updated) throw new Error('Failed to complete session');
 
-  async getStats(classId?: string): Promise<{
-    totalSessions: number;
-    totalDuration: number;
-    averageDuration: number;
-  }> {
-    const db = getDatabase();
-    
-    const query = classId
-      ? `SELECT 
+        return updated;
+    },
+
+    async delete(id: string): Promise<void> {
+        const db = getDatabase();
+        await db.runAsync('DELETE FROM sessions WHERE id = ?', [id]);
+    },
+
+    async deleteByClass(classId: string): Promise<void> {
+        const db = getDatabase();
+        await db.runAsync('DELETE FROM sessions WHERE class_id = ?', [classId]);
+    },
+
+    async getStats(classId?: string): Promise<{
+        totalSessions: number;
+        totalDuration: number;
+        averageDuration: number;
+    }> {
+        const db = getDatabase();
+
+        const query = classId
+            ? `SELECT
           COUNT(*) as totalSessions,
           SUM(duration) as totalDuration,
           AVG(duration) as averageDuration
-         FROM sessions 
+         FROM sessions
          WHERE class_id = ? AND status = 'completed'`
-      : `SELECT 
+            : `SELECT
           COUNT(*) as totalSessions,
           SUM(duration) as totalDuration,
           AVG(duration) as averageDuration
-         FROM sessions 
+         FROM sessions
          WHERE status = 'completed'`;
-    
-    const params = classId ? [classId] : [];
-    const result = await db.getFirstAsync<any>(query, params);
 
-    return {
-      totalSessions: result?.totalSessions || 0,
-      totalDuration: result?.totalDuration || 0,
-      averageDuration: result?.averageDuration || 0,
-    };
-  },
+        const params = classId ? [classId] : [];
+        const result = await db.getFirstAsync<any>(query, params);
+
+        return {
+            totalSessions: result?.totalSessions || 0,
+            totalDuration: result?.totalDuration || 0,
+            averageDuration: result?.averageDuration || 0,
+        };
+    },
 };

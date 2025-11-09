@@ -12,7 +12,7 @@ const generateId = () => `schedule_${Date.now()}_${Math.random().toString(36).su
  */
 export async function getByClass(classId: string): Promise<ScheduleSlot[]> {
     const db = getDatabase();
-    
+
     const slots = await db.getAllAsync<any>(
         'SELECT * FROM schedule_slots WHERE class_id = ? ORDER BY day_of_week, start_time',
         [classId]
@@ -26,7 +26,7 @@ export async function getByClass(classId: string): Promise<ScheduleSlot[]> {
  */
 export async function getAll(): Promise<ScheduleSlot[]> {
     const db = getDatabase();
-    
+
     const slots = await db.getAllAsync<any>(
         'SELECT * FROM schedule_slots ORDER BY class_id, day_of_week, start_time'
     );
@@ -39,7 +39,7 @@ export async function getAll(): Promise<ScheduleSlot[]> {
  */
 export async function getById(id: string): Promise<ScheduleSlot | null> {
     const db = getDatabase();
-    
+
     const slot = await db.getFirstAsync<any>(
         'SELECT * FROM schedule_slots WHERE id = ?',
         [id]
@@ -89,7 +89,7 @@ export async function create(data: CreateScheduleSlotData): Promise<ScheduleSlot
 
     const created = await getById(id);
     if (!created) throw new Error('Failed to create schedule slot');
-    
+
     return created;
 }
 
@@ -154,7 +154,7 @@ export async function update(id: string, data: UpdateScheduleSlotData): Promise<
 
     const updated = await getById(id);
     if (!updated) throw new Error('Failed to update schedule slot');
-    
+
     return updated;
 }
 
@@ -163,7 +163,7 @@ export async function update(id: string, data: UpdateScheduleSlotData): Promise<
  */
 export async function deleteSlot(id: string): Promise<void> {
     const db = getDatabase();
-    
+
     await db.runAsync('DELETE FROM schedule_slots WHERE id = ?', [id]);
 }
 
@@ -172,7 +172,7 @@ export async function deleteSlot(id: string): Promise<void> {
  */
 export async function deleteByClass(classId: string): Promise<void> {
     const db = getDatabase();
-    
+
     await db.runAsync('DELETE FROM schedule_slots WHERE class_id = ?', [classId]);
 }
 
@@ -186,22 +186,22 @@ export async function getStats(classId?: string): Promise<{
     totalWeeklyMinutes: number;
 }> {
     const db = getDatabase();
-    
+
     const query = classId
-        ? `SELECT 
+        ? `SELECT
             COUNT(*) as totalSlots,
             SUM(CASE WHEN frequency = 'weekly' THEN 1 ELSE 0 END) as weeklySlots,
             SUM(CASE WHEN frequency = 'biweekly' THEN 1 ELSE 0 END) as biweeklySlots,
             SUM(CASE WHEN frequency = 'weekly' THEN duration ELSE duration / 2 END) as totalWeeklyMinutes
-           FROM schedule_slots 
+           FROM schedule_slots
            WHERE class_id = ?`
-        : `SELECT 
+        : `SELECT
             COUNT(*) as totalSlots,
             SUM(CASE WHEN frequency = 'weekly' THEN 1 ELSE 0 END) as weeklySlots,
             SUM(CASE WHEN frequency = 'biweekly' THEN 1 ELSE 0 END) as biweeklySlots,
             SUM(CASE WHEN frequency = 'weekly' THEN duration ELSE duration / 2 END) as totalWeeklyMinutes
            FROM schedule_slots`;
-    
+
     const params = classId ? [classId] : [];
     const result = await db.getFirstAsync<any>(query, params);
 
