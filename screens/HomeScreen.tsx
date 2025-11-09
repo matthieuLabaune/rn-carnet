@@ -114,7 +114,7 @@ export default function HomeScreen({ navigation }: Props) {
                     </View>
                 </Animated.View>
             ) : (
-                <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
+                <Animated.View style={{ flex: 1, opacity: fadeAnim, zIndex: 1 }}>
                     <FlatList
                         data={classes}
                         keyExtractor={(item) => item.id}
@@ -170,6 +170,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fafafa',
+        position: 'relative',
     },
     loadingContainer: {
         flex: 1,
@@ -263,7 +264,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
-        elevation: 2,
+        elevation: 3,
+        zIndex: 10,
     },
     classContent: {
         padding: 16,
