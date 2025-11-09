@@ -6,3 +6,5 @@ export * from './attendance';
 export * from './competence';
 export * from './evaluation';
 export * from './evaluationResult';
+export * from './schedule';
+export * from './holiday';
