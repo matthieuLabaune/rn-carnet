@@ -76,7 +76,7 @@ describe('theme', () => {
         });
 
         it('should have light background color', () => {
-            expect(lightTheme.background).toMatch(/^#[fF]/);
+            expect(lightTheme.background).toBe('#e5e5e5');
         });
     });
 
