@@ -8,7 +8,7 @@
 
 **Cause** : Les nouveaux écrans (ScheduleManagement et SessionGeneration) n'avaient pas de bouton retour explicite dans leur header.
 
-**Solution** : 
+**Solution** :
 - Ajout d'un header personnalisé avec bouton retour dans `ScheduleManagementScreen`
 - Ajout d'un header personnalisé avec bouton retour dans `SessionGenerationScreen`
 - Navigation explicite vers l'écran précédent au lieu de `goBack()`
@@ -19,7 +19,7 @@
 
 **Cause** : Le `previewGeneration` essayait de générer un aperçu même sans créneaux configurés
 
-**Solution** : 
+**Solution** :
 - Vérification du nombre de créneaux avant d'appeler `previewGeneration`
 - Filtrage des erreurs attendues (pas de créneaux = état normal au démarrage)
 
@@ -27,7 +27,7 @@
 
 **Statut** : ✅ Les vacances 2025-2026 sont déjà intégrées dans le code
 
-**Explication** : 
+**Explication** :
 Le service `holidayService.ts` contient les vacances pour :
 - 2024-2025 (septembre 2024 → juillet 2025)
 - 2025-2026 (septembre 2025 → juillet 2026)
