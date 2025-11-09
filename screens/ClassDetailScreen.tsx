@@ -165,6 +165,27 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                     )}
                 </View>
 
+                {/* Schedule / Emploi du temps Section */}
+                <View style={styles.section}>
+                    <TouchableOpacity
+                        style={[styles.scheduleCard, { backgroundColor: theme.cardBackground }]}
+                        onPress={() => navigation.navigate('ScheduleManagement', { classId, className })}
+                    >
+                        <View style={styles.scheduleIconContainer}>
+                            <MaterialCommunityIcons name="calendar-clock" size={32} color={classColor} />
+                        </View>
+                        <View style={styles.scheduleContent}>
+                            <Text style={[styles.scheduleTitle, { color: theme.text }]}>
+                                Emploi du temps
+                            </Text>
+                            <Text style={[styles.scheduleSubtitle, { color: theme.textSecondary }]}>
+                                Configurer et générer les séances automatiquement
+                            </Text>
+                        </View>
+                        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.textSecondary} />
+                    </TouchableOpacity>
+                </View>
+
                 {/* Sessions Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>
@@ -544,6 +565,42 @@ const styles = StyleSheet.create({
     addButtonTextSecondary: {
         fontWeight: '600',
         fontSize: 15,
+    },
+    scheduleCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'white',
+        borderRadius: 12,
+        padding: 16,
+        borderLeftWidth: 6,
+        borderLeftColor: '#007AFF',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    scheduleIconContainer: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        backgroundColor: '#E3F2FD',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 16,
+    },
+    scheduleContent: {
+        flex: 1,
+    },
+    scheduleTitle: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#000',
+        marginBottom: 4,
+    },
+    scheduleSubtitle: {
+        fontSize: 14,
+        color: '#666',
     },
     evaluationHeader: {
         flexDirection: 'row',

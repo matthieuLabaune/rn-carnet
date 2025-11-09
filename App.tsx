@@ -21,6 +21,8 @@ import SessionDetailScreen from './screens/SessionDetailScreen';
 import CompetencesManagementScreen from './screens/CompetencesManagementScreen';
 import EvaluationsListScreen from './screens/EvaluationsListScreen';
 import EvaluationDetailScreen from './screens/EvaluationDetailScreen';
+import ScheduleManagementScreen from './screens/ScheduleManagementScreen';
+import SessionGenerationScreen from './screens/SessionGenerationScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -167,6 +169,16 @@ export default function App() {
                             <Stack.Screen
                                 name="EvaluationDetail"
                                 component={EvaluationDetailScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="ScheduleManagement"
+                                component={ScheduleManagementScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="SessionGeneration"
+                                component={SessionGenerationScreen}
                                 options={{ headerShown: false }}
                             />
                         </Stack.Navigator>
