@@ -169,7 +169,7 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                 <View style={styles.section}>
                     <TouchableOpacity
                         style={[styles.scheduleCard, { backgroundColor: theme.cardBackground }]}
-                        onPress={() => navigation.navigate('ScheduleManagement', { classId, className, classColor })}
+                        onPress={() => navigation.navigate('ScheduleWizard', { classId, className, classColor })}
                     >
                         <View style={styles.scheduleIconContainer}>
                             <MaterialCommunityIcons name="calendar-clock" size={32} color={classColor} />

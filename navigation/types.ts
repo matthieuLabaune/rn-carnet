@@ -12,6 +12,7 @@ export type RootStackParamList = {
     EvaluationDetail: { evaluationId: string };
     ScheduleManagement: { classId: string; className: string; classColor: string };
     SessionGeneration: { classId: string; className: string; classColor: string };
+    ScheduleWizard: { classId: string; className: string; classColor: string };
 };
 
 export type MainTabsParamList = {

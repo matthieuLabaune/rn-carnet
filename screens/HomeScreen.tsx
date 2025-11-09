@@ -114,7 +114,7 @@ export default function HomeScreen({ navigation }: Props) {
                     </View>
                 </Animated.View>
             ) : (
-                <Animated.View style={{ flex: 1, opacity: fadeAnim, zIndex: 1 }}>
+                <Animated.View style={{ flex: 1, opacity: fadeAnim }}>
                     <FlatList
                         data={classes}
                         keyExtractor={(item) => item.id}
