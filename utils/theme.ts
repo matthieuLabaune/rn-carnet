@@ -8,7 +8,7 @@ export const COLORS = {
 
 export const lightTheme = {
     // Background colors
-    background: '#fafafa',
+    background: '#e5e5e5',
     surface: '#ffffff',
     surfaceVariant: '#f5f5f5',
 

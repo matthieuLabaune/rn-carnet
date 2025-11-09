@@ -131,7 +131,7 @@ export default function SessionListScreen({ navigation, route }: Props) {
                         {sessions.map((session) => (
                             <TouchableOpacity
                                 key={session.id}
-                                style={[styles.sessionCard, { backgroundColor: theme.surface }]}
+                                style={[styles.sessionCard, { backgroundColor: theme.surface, borderLeftColor: classData?.color }]}
                                 onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
                             >
                                 <View style={styles.sessionHeader}>
@@ -246,7 +246,9 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     sessionCard: {
-        borderRadius: 12,
+        borderTopRightRadius: 12,
+        borderBottomRightRadius: 12,
+        borderLeftWidth: 6,
         padding: 16,
         elevation: 2,
         shadowColor: '#000',

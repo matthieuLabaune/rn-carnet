@@ -122,11 +122,10 @@ export default function HomeScreen({ navigation }: Props) {
                         showsVerticalScrollIndicator={false}
                         renderItem={({ item }) => (
                             <TouchableOpacity
-                                style={[styles.classCard, { backgroundColor: theme.cardBackground }]}
+                                style={[styles.classCard, { backgroundColor: theme.cardBackground, borderLeftColor: item.color }]}
                                 activeOpacity={0.7}
                                 onPress={() => handleClassPress(item)}
                             >
-                                <View style={[styles.colorBar, { backgroundColor: item.color }]} />
                                 <View style={styles.classContent}>
                                     <View style={styles.classHeader}>
                                         <Text style={[styles.className, { color: theme.text }]}>{item.name}</Text>
@@ -256,18 +255,15 @@ const styles = StyleSheet.create({
     },
     classCard: {
         backgroundColor: '#ffffff',
-        borderRadius: 12,
+        borderTopRightRadius: 12,
+        borderBottomRightRadius: 12,
+        borderLeftWidth: 6,
         marginBottom: 12,
-        overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.05,
         shadowRadius: 4,
         elevation: 2,
-    },
-    colorBar: {
-        height: 4,
-        width: '100%',
     },
     classContent: {
         padding: 16,

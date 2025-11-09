@@ -195,6 +195,7 @@ export default function StudentListScreen({ navigation, route }: Props) {
                                 key={student.id}
                                 style={[
                                     styles.studentCard,
+                                    { borderLeftColor: classColor },
                                     index === 0 && styles.firstCard
                                 ]}
                                 onPress={() => navigation.navigate('StudentDetail', { studentId: student.id })}
@@ -342,7 +343,9 @@ const styles = StyleSheet.create({
     },
     studentCard: {
         backgroundColor: '#ffffff',
-        borderRadius: 12,
+        borderTopRightRadius: 12,
+        borderBottomRightRadius: 12,
+        borderLeftWidth: 6,
         padding: 16,
         marginBottom: 8,
         flexDirection: 'row',

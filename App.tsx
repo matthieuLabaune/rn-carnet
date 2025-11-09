@@ -39,8 +39,8 @@ function MainTabs() {
                     backgroundColor: theme.surface,
                     borderTopWidth: 1,
                     borderTopColor: theme.border,
-                    height: 60,
-                    paddingBottom: 8,
+                    height: 85,
+                    paddingBottom: 20,
                     paddingTop: 8,
                 },
                 tabBarLabelStyle: {

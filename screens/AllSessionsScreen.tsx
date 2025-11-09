@@ -110,7 +110,7 @@ export default function AllSessionsScreen() {
                         {sessions.map((session) => (
                             <TouchableOpacity
                                 key={session.id}
-                                style={[styles.sessionCard, { backgroundColor: theme.cardBackground }]}
+                                style={[styles.sessionCard, { backgroundColor: theme.cardBackground, borderLeftColor: getClassColor(session.classId) }]}
                                 onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
                             >
                                 <View style={styles.sessionHeader}>
@@ -196,7 +196,9 @@ const styles = StyleSheet.create({
     },
     sessionCard: {
         backgroundColor: '#ffffff',
-        borderRadius: 12,
+        borderTopRightRadius: 12,
+        borderBottomRightRadius: 12,
+        borderLeftWidth: 6,
         padding: 16,
         marginBottom: 12,
         shadowColor: '#000',

@@ -114,11 +114,11 @@ export default function AllStudentsScreen({ navigation }: Props) {
                 )}
             </View>
 
-            <ScrollView style={styles.content}>
+            <ScrollView style={styles.content} contentContainerStyle={styles.list}>
                 {filteredStudents.map((student) => (
                     <TouchableOpacity
                         key={student.id}
-                        style={[styles.studentCard, { backgroundColor: theme.cardBackground }]}
+                        style={[styles.studentCard, { backgroundColor: theme.cardBackground, borderLeftColor: getClassColor(student.classId) }]}
                         onPress={() => navigation.navigate('StudentDetail', { studentId: student.id })}
                     >
                         <View style={styles.studentInfo}>
@@ -211,10 +211,13 @@ const styles = StyleSheet.create({
     },
     list: {
         padding: 16,
+        paddingBottom: 100,
     },
     studentCard: {
         backgroundColor: '#ffffff',
-        borderRadius: 12,
+        borderTopRightRadius: 12,
+        borderBottomRightRadius: 12,
+        borderLeftWidth: 6,
         padding: 16,
         marginBottom: 8,
         flexDirection: 'row',
