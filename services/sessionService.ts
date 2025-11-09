@@ -167,6 +167,11 @@ export const sessionService = {
     await db.runAsync('DELETE FROM sessions WHERE id = ?', [id]);
   },
 
+  async deleteByClass(classId: string): Promise<void> {
+    const db = getDatabase();
+    await db.runAsync('DELETE FROM sessions WHERE class_id = ?', [classId]);
+  },
+
   async getStats(classId?: string): Promise<{
     totalSessions: number;
     totalDuration: number;

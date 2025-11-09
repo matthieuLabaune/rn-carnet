@@ -6,3 +6,7 @@ export * from './attendanceService';
 export * from './competenceService';
 export * from './evaluationService';
 export * from './evaluationResultService';
+export * from './holidayService';
+export * from './settingsService';
+export * from './scheduleService';
+export * from './sessionGeneratorService';
