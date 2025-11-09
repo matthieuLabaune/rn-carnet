@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { TextInput, Text } from 'react-native-paper';
-import { COLORS, SPACING } from '../utils';
+import { SPACING } from '../utils';
+import { COLORS } from '../utils/constants';
 
 interface ClassFormDialogProps {
   visible: boolean;

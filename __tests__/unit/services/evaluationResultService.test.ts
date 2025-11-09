@@ -243,6 +243,122 @@ describe('evaluationResultService', () => {
         });
     });
 
+    describe('bulkUpsert', () => {
+        it('should upsert multiple results', async () => {
+            const results = [
+                {
+                    id: 'result-1',
+                    evaluationId: 'eval-1',
+                    studentId: 'student-1',
+                    competenceId: 'comp-1',
+                    niveau: 'atteint' as const,
+                    score: 18,
+                },
+                {
+                    id: 'result-2',
+                    evaluationId: 'eval-1',
+                    studentId: 'student-2',
+                    competenceId: 'comp-1',
+                    niveau: 'partiellement-atteint' as const,
+                    score: 12,
+                },
+            ];
+
+            global.mockDb.getFirstAsync = jest.fn()
+                .mockResolvedValueOnce(null) // First result doesn't exist
+                .mockResolvedValueOnce({ // getById for first result
+                    id: 'result-1',
+                    evaluation_id: 'eval-1',
+                    student_id: 'student-1',
+                    competence_id: 'comp-1',
+                    niveau: 'atteint',
+                    score: 18,
+                    commentaire: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                })
+                .mockResolvedValueOnce(null) // Second result doesn't exist
+                .mockResolvedValueOnce({ // getById for second result
+                    id: 'result-2',
+                    evaluation_id: 'eval-1',
+                    student_id: 'student-2',
+                    competence_id: 'comp-1',
+                    niveau: 'partiellement-atteint',
+                    score: 12,
+                    commentaire: null,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                });
+
+            global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
+
+            await evaluationResultService.bulkUpsert(results);
+
+            expect(global.mockDb.runAsync).toHaveBeenCalledTimes(2);
+        });
+    });
+
+    describe('update', () => {
+        it('should update a result with niveau', async () => {
+            global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
+
+            await evaluationResultService.update('result-1', { niveau: 'depasse' });
+
+            expect(global.mockDb.runAsync).toHaveBeenCalledWith(
+                expect.stringContaining('UPDATE evaluation_results'),
+                expect.arrayContaining(['depasse'])
+            );
+        });
+
+        it('should update a result with score', async () => {
+            global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
+
+            await evaluationResultService.update('result-1', { score: 20 });
+
+            expect(global.mockDb.runAsync).toHaveBeenCalledWith(
+                expect.stringContaining('UPDATE evaluation_results'),
+                expect.arrayContaining([20])
+            );
+        });
+
+        it('should update a result with commentaire', async () => {
+            global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
+
+            await evaluationResultService.update('result-1', { commentaire: 'Excellent travail' });
+
+            expect(global.mockDb.runAsync).toHaveBeenCalledWith(
+                expect.stringContaining('UPDATE evaluation_results'),
+                expect.arrayContaining(['Excellent travail'])
+            );
+        });
+
+        it('should update multiple fields at once', async () => {
+            global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
+
+            await evaluationResultService.update('result-1', {
+                niveau: 'atteint',
+                score: 15,
+                commentaire: 'Bien',
+            });
+
+            expect(global.mockDb.runAsync).toHaveBeenCalledWith(
+                expect.stringContaining('UPDATE evaluation_results'),
+                expect.arrayContaining(['atteint', 15, 'Bien'])
+            );
+        });
+
+        it('should only update updated_at when no fields provided', async () => {
+            global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
+
+            await evaluationResultService.update('result-1', {});
+
+            expect(global.mockDb.runAsync).toHaveBeenCalledWith(
+                'UPDATE evaluation_results SET updated_at = ? WHERE id = ?',
+                expect.arrayContaining(['result-1'])
+            );
+        });
+    });
+
     describe('delete', () => {
         it('should delete a result', async () => {
             global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
