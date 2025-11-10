@@ -88,12 +88,12 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
                         },
                     ]}
                 >
-                    <Text style={styles.appName}>Carnet de Notes</Text>
+                    <Text style={styles.appName}>Carnet - Éducation</Text>
                     <Text style={styles.tagline}>Gérez vos classes avec simplicité</Text>
                 </Animated.View>
             </Animated.View>
 
-            {/* Version */}
+            {/* Footer avec version et crédit */}
             <Animated.View
                 style={[
                     styles.footer,
@@ -103,6 +103,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
                 ]}
             >
                 <Text style={styles.version}>v1.0.0</Text>
+                <Text style={styles.credits}>Grey Matter Technology</Text>
             </Animated.View>
         </View>
     );
@@ -156,9 +157,16 @@ const styles = StyleSheet.create({
     footer: {
         position: 'absolute',
         bottom: 50,
+        alignItems: 'center',
     },
     version: {
         fontSize: 14,
         color: 'rgba(255, 255, 255, 0.7)',
+        marginBottom: 4,
+    },
+    credits: {
+        fontSize: 12,
+        color: 'rgba(255, 255, 255, 0.6)',
+        fontWeight: '600',
     },
 });
