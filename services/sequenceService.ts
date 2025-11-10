@@ -204,11 +204,35 @@ export const sequenceService = {
     assignSessionsToSequence: async (sequenceId: string, sessionIds: string[]): Promise<void> => {
         const db = getDatabase();
 
-        // Supprimer les assignations existantes pour ces séances
+        // Vérifier qu'aucune séance n'est déjà assignée à une autre séquence
         const placeholders = sessionIds.map(() => '?').join(',');
+        const conflictingSessions = await db.getAllAsync<{ session_id: string; sequence_id: string }>(
+            `SELECT session_id, sequence_id FROM session_sequences
+             WHERE session_id IN (${placeholders}) AND sequence_id != ?`,
+            [...sessionIds, sequenceId]
+        );
+
+        if (conflictingSessions.length > 0) {
+            // Récupérer les noms des séquences en conflit
+            const conflictingSequenceIds = [...new Set(conflictingSessions.map(c => c.sequence_id))];
+            const sequences = await Promise.all(
+                conflictingSequenceIds.map(id => sequenceService.getById(id))
+            );
+            const sequenceNames = sequences
+                .filter((s): s is Sequence => s !== null)
+                .map(s => s.name)
+                .join(', ');
+
+            throw new Error(
+                `Certaines séances sont déjà assignées à d'autres séquences (${sequenceNames}). ` +
+                `Veuillez désassigner ces séances avant de les réassigner.`
+            );
+        }
+
+        // Supprimer les assignations existantes pour cette séquence uniquement
         await db.runAsync(
-            `DELETE FROM session_sequences WHERE session_id IN (${placeholders})`,
-            sessionIds
+            'DELETE FROM session_sequences WHERE sequence_id = ?',
+            [sequenceId]
         );
 
         // Créer les nouvelles assignations
@@ -357,8 +381,10 @@ export const sequenceService = {
 
     /**
      * Auto-assigner les séquences aux séances générées (ordre séquentiel)
+     * TODO: À réimplémenter plus tard avec une meilleure UX
+     * Voir todo list - "Réimplémenter l'auto-assignation des séquences"
      */
-    autoAssignSequences: async (classId: string): Promise<void> => {
+    /* autoAssignSequences: async (classId: string): Promise<void> => {
         const db = getDatabase();
 
         // Récupérer toutes les séquences triées par ordre
@@ -388,5 +414,5 @@ export const sequenceService = {
                 await sequenceService.assignSessionsToSequence(sequence.id, sessionsToAssign);
             }
         }
-    }
+    } */
 };

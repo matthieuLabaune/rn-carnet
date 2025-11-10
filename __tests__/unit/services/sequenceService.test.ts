@@ -295,6 +295,8 @@ describe('sequenceService', () => {
 
     describe('assignSessionsToSequence', () => {
         it('should assign sessions to a sequence', async () => {
+            // Mock: pas de séances déjà assignées à d'autres séquences
+            global.mockDb.getAllAsync.mockResolvedValueOnce([]);
             global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
             global.mockDb.getFirstAsync.mockResolvedValue({
                 ...mockSequenceRow,
@@ -307,15 +309,23 @@ describe('sequenceService', () => {
                 'session_3',
             ]);
 
+            // Vérifier la vérification des conflits
+            expect(global.mockDb.getAllAsync).toHaveBeenCalledWith(
+                expect.stringContaining('SELECT session_id, sequence_id FROM session_sequences'),
+                expect.arrayContaining(['session_1', 'session_2', 'session_3', 'seq_1'])
+            );
+
             // Delete existing + 3 inserts + update status
             expect(global.mockDb.runAsync).toHaveBeenCalled();
             expect(global.mockDb.runAsync).toHaveBeenCalledWith(
-                expect.stringContaining('DELETE FROM session_sequences'),
-                expect.any(Array)
+                expect.stringContaining('DELETE FROM session_sequences WHERE sequence_id = ?'),
+                ['seq_1']
             );
         });
 
         it('should update status based on assignment progress', async () => {
+            // Mock: pas de conflits
+            global.mockDb.getAllAsync.mockResolvedValueOnce([]);
             global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
 
             // First call: get sequence
@@ -339,6 +349,8 @@ describe('sequenceService', () => {
         });
 
         it('should mark as completed when all sessions assigned', async () => {
+            // Mock: pas de conflits
+            global.mockDb.getAllAsync.mockResolvedValueOnce([]);
             global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
             global.mockDb.getFirstAsync.mockResolvedValueOnce({
                 ...mockSequenceRow,
@@ -354,6 +366,24 @@ describe('sequenceService', () => {
                 call[0].includes('UPDATE sequences SET status')
             );
             expect(statusUpdateCall[1]).toContain('completed');
+        });
+
+        it('should throw error when sessions are assigned to other sequences', async () => {
+            // Mock: session_1 déjà assignée à seq_2
+            global.mockDb.getAllAsync.mockResolvedValueOnce([
+                { session_id: 'session_1', sequence_id: 'seq_2' }
+            ]);
+
+            // Mock getById pour récupérer le nom de la séquence en conflit
+            global.mockDb.getFirstAsync.mockResolvedValueOnce({
+                ...mockSequenceRow,
+                id: 'seq_2',
+                name: 'Autre séquence',
+            });
+
+            await expect(
+                sequenceService.assignSessionsToSequence('seq_1', ['session_1', 'session_2'])
+            ).rejects.toThrow('Certaines séances sont déjà assignées à d\'autres séquences');
         });
     });
 
@@ -497,7 +527,8 @@ describe('sequenceService', () => {
         });
     });
 
-    describe('autoAssignSequences', () => {
+    // TODO: Réactiver ces tests quand on réimplémente l'auto-assignation
+    /* describe('autoAssignSequences', () => {
         it('should auto-assign sequences to available sessions', async () => {
             const sequences = [
                 { ...mockParsedSequence, sessionCount: 3 },
@@ -555,5 +586,5 @@ describe('sequenceService', () => {
             // Should assign only the available sessions (2 out of 10)
             expect(global.mockDb.runAsync).toHaveBeenCalled();
         });
-    });
+    }); */
 });
