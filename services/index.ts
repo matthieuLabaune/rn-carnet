@@ -8,5 +8,6 @@ export * from './evaluationService';
 export * from './evaluationResultService';
 export * from './holidayService';
 export * from './settingsService';
+export * from './sequenceService';
 export * from './scheduleService';
 export * from './sessionGeneratorService';

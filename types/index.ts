@@ -8,3 +8,4 @@ export * from './evaluation';
 export * from './evaluationResult';
 export * from './schedule';
 export * from './holiday';
+export * from './sequence';

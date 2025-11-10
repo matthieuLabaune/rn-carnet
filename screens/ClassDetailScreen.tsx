@@ -186,6 +186,27 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                     </TouchableOpacity>
                 </View>
 
+                {/* Sequences / Planification pédagogique Section */}
+                <View style={styles.section}>
+                    <TouchableOpacity
+                        style={[styles.scheduleCard, { backgroundColor: theme.cardBackground }]}
+                        onPress={() => navigation.navigate('SequencePlanning', { classId, className, classColor })}
+                    >
+                        <View style={styles.scheduleIconContainer}>
+                            <MaterialCommunityIcons name="book-open-page-variant" size={32} color={classColor} />
+                        </View>
+                        <View style={styles.scheduleContent}>
+                            <Text style={[styles.scheduleTitle, { color: theme.text }]}>
+                                📚 Séquences Pédagogiques
+                            </Text>
+                            <Text style={[styles.scheduleSubtitle, { color: theme.textSecondary }]}>
+                                Organiser le programme en séquences thématiques
+                            </Text>
+                        </View>
+                        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.textSecondary} />
+                    </TouchableOpacity>
+                </View>
+
                 {/* Sessions Section */}
                 <View style={styles.section}>
                     <View style={styles.sectionHeader}>

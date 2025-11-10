@@ -148,6 +148,39 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
 
     CREATE INDEX IF NOT EXISTS idx_schedule_slots_class_id ON schedule_slots(class_id);
     CREATE INDEX IF NOT EXISTS idx_schedule_slots_day_of_week ON schedule_slots(day_of_week);
+
+    CREATE TABLE IF NOT EXISTS sequences (
+      id TEXT PRIMARY KEY NOT NULL,
+      class_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      color TEXT NOT NULL,
+      order_num INTEGER NOT NULL,
+      session_count INTEGER NOT NULL,
+      theme TEXT,
+      objectives TEXT,
+      resources TEXT,
+      status TEXT NOT NULL DEFAULT 'planned',
+      created_at TEXT NOT NULL,
+      updated_at TEXT,
+      FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+      CHECK (status IN ('planned', 'in-progress', 'completed'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_sequences_class_id ON sequences(class_id);
+    CREATE INDEX IF NOT EXISTS idx_sequences_status ON sequences(status);
+
+    CREATE TABLE IF NOT EXISTS session_sequences (
+      session_id TEXT NOT NULL,
+      sequence_id TEXT NOT NULL,
+      order_in_sequence INTEGER NOT NULL,
+      PRIMARY KEY (session_id, sequence_id),
+      FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE,
+      FOREIGN KEY (sequence_id) REFERENCES sequences(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_session_sequences_sequence_id ON session_sequences(sequence_id);
+    CREATE INDEX IF NOT EXISTS idx_session_sequences_session_id ON session_sequences(session_id);
   `);
 
     // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
@@ -191,6 +224,8 @@ export const closeDatabase = async (): Promise<void> => {
 export const resetDatabase = async (): Promise<void> => {
     const database = getDatabase();
     await database.execAsync(`
+    DROP TABLE IF EXISTS session_sequences;
+    DROP TABLE IF EXISTS sequences;
     DROP TABLE IF EXISTS evaluation_results;
     DROP TABLE IF EXISTS evaluations;
     DROP TABLE IF EXISTS competences;

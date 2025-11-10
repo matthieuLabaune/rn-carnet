@@ -13,6 +13,15 @@ export type RootStackParamList = {
     ScheduleManagement: { classId: string; className: string; classColor: string };
     SessionGeneration: { classId: string; className: string; classColor: string };
     ScheduleWizard: { classId: string; className: string; classColor: string };
+    SequencePlanning: { classId: string; className: string; classColor: string };
+    SequenceAssignment: {
+        sequenceId: string;
+        sequenceName: string;
+        sessionCount: number;
+        classId: string;
+        className: string;
+        classColor: string;
+    };
 };
 
 export type MainTabsParamList = {
