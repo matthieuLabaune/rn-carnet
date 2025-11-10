@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-import { Session } from '../types';
+import { Session, Sequence } from '../types';
 import { sessionService, sequenceService } from '../services';
 import { SPACING } from '../utils';
 import { formatDate, formatTime } from '../utils/formatters';
@@ -26,6 +26,7 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
     const [allSessions, setAllSessions] = useState<Session[]>([]);
     const [assignedSessionIds, setAssignedSessionIds] = useState<string[]>([]);
     const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
+    const [sessionSequences, setSessionSequences] = useState<Map<string, Sequence>>(new Map());
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -43,9 +44,19 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
             const assignedSessions = await sequenceService.getSessionsBySequence(sequenceId);
             const assignedIds = assignedSessions.map(s => s.id);
 
+            // Récupérer toutes les séquences assignées pour chaque séance
+            const sequenceMap = new Map<string, Sequence>();
+            await Promise.all(sessions.map(async (session) => {
+                const sequence = await sequenceService.getSequenceBySession(session.id);
+                if (sequence && sequence.id !== sequenceId) {
+                    sequenceMap.set(session.id, sequence);
+                }
+            }));
+
             setAllSessions(sessions);
             setAssignedSessionIds(assignedIds);
             setSelectedSessionIds(assignedIds);
+            setSessionSequences(sequenceMap);
         } catch (error) {
             console.error('Error loading sessions:', error);
             Alert.alert('Erreur', 'Impossible de charger les séances');
@@ -55,6 +66,16 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
     };
 
     const toggleSession = (sessionId: string) => {
+        // Vérifier si la séance est assignée à une autre séquence
+        if (sessionSequences.has(sessionId)) {
+            const otherSequence = sessionSequences.get(sessionId)!;
+            Alert.alert(
+                'Séance déjà assignée',
+                `Cette séance est déjà assignée à la séquence "${otherSequence.name}". Veuillez d'abord la désassigner.`
+            );
+            return;
+        }
+
         setSelectedSessionIds(prev => {
             if (prev.includes(sessionId)) {
                 return prev.filter(id => id !== sessionId);
@@ -73,19 +94,24 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
     };
 
     const handleQuickSelect = () => {
-        // Trouver les N prochaines séances non assignées
-        const unassignedSessions = allSessions
-            .filter(s => !isSessionAssignedToOtherSequence(s.id))
+        // Trouver les N prochaines séances non assignées à d'autres séquences
+        const availableSessions = allSessions
+            .filter(s => !sessionSequences.has(s.id))
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
             .slice(0, sessionCount);
 
-        setSelectedSessionIds(unassignedSessions.map(s => s.id));
+        if (availableSessions.length < sessionCount) {
+            Alert.alert(
+                'Séances insuffisantes',
+                `Seulement ${availableSessions.length} séance(s) disponible(s) sur les ${sessionCount} nécessaires. Certaines séances sont déjà assignées à d'autres séquences.`
+            );
+        }
+
+        setSelectedSessionIds(availableSessions.map(s => s.id));
     };
 
     const isSessionAssignedToOtherSequence = (sessionId: string): boolean => {
-        // Pour l'instant, on vérifie juste si ce n'est pas dans les assignés actuels
-        // Dans une version plus complète, on pourrait vérifier toutes les assignations
-        return false;
+        return sessionSequences.has(sessionId);
     };
 
     const handleValidate = async () => {
@@ -112,7 +138,8 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
             ]);
         } catch (error) {
             console.error('Error assigning sessions:', error);
-            Alert.alert('Erreur', "Impossible d'assigner les séances");
+            const errorMessage = error instanceof Error ? error.message : "Impossible d'assigner les séances";
+            Alert.alert('Erreur', errorMessage);
         }
     };
 
@@ -188,42 +215,61 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
                         {group.sessions.map(session => {
                             const isSelected = selectedSessionIds.includes(session.id);
                             const order = getSessionOrder(session.id);
+                            const otherSequence = sessionSequences.get(session.id);
+                            const isAssignedToOther = !!otherSequence;
 
                             return (
                                 <TouchableOpacity
                                     key={session.id}
                                     onPress={() => toggleSession(session.id)}
-                                    activeOpacity={0.7}
+                                    activeOpacity={isAssignedToOther ? 0.5 : 0.7}
+                                    disabled={isAssignedToOther}
                                     style={[
                                         styles.sessionCard,
                                         isSelected && styles.sessionCardSelected,
+                                        isAssignedToOther && styles.sessionCardDisabled,
                                     ]}
                                 >
                                     <View style={styles.sessionContent}>
                                         <TouchableOpacity
                                             onPress={() => toggleSession(session.id)}
                                             style={styles.checkboxContainer}
+                                            disabled={isAssignedToOther}
                                         >
                                             <MaterialCommunityIcons
-                                                name={isSelected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                                name={
+                                                    isAssignedToOther
+                                                        ? 'lock'
+                                                        : isSelected
+                                                            ? 'checkbox-marked'
+                                                            : 'checkbox-blank-outline'
+                                                }
                                                 size={24}
-                                                color={isSelected ? '#007AFF' : '#999'}
+                                                color={isAssignedToOther ? '#999' : isSelected ? '#007AFF' : '#999'}
                                             />
                                         </TouchableOpacity>
                                         <View style={styles.sessionInfo}>
-                                            <Text style={styles.sessionDate}>
+                                            <Text style={[styles.sessionDate, isAssignedToOther && styles.disabledText]}>
                                                 {formatDate(session.date)} • {formatTime(session.date)}
                                             </Text>
-                                            <Text style={styles.sessionSubject}>
+                                            <Text style={[styles.sessionSubject, isAssignedToOther && styles.disabledText]}>
                                                 {session.subject}
                                             </Text>
                                             {session.description && (
-                                                <Text style={styles.sessionDescription}>
+                                                <Text style={[styles.sessionDescription, isAssignedToOther && styles.disabledText]}>
                                                     {session.description}
                                                 </Text>
                                             )}
+                                            {otherSequence && (
+                                                <View style={[styles.assignedBadge, { backgroundColor: otherSequence.color }]}>
+                                                    <MaterialCommunityIcons name="link-variant" size={12} color="#FFFFFF" />
+                                                    <Text style={styles.assignedBadgeText}>
+                                                        {otherSequence.name}
+                                                    </Text>
+                                                </View>
+                                            )}
                                         </View>
-                                        {order && (
+                                        {order && !isAssignedToOther && (
                                             <View style={[styles.orderBadge, { backgroundColor: classColor }]}>
                                                 <Text style={styles.orderText}>{order}</Text>
                                             </View>
@@ -347,6 +393,10 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         elevation: 4,
     },
+    sessionCardDisabled: {
+        opacity: 0.5,
+        backgroundColor: '#f5f5f5',
+    },
     sessionContent: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -371,6 +421,24 @@ const styles = StyleSheet.create({
     sessionDescription: {
         fontSize: 12,
         color: '#999',
+    },
+    disabledText: {
+        color: '#bbb',
+    },
+    assignedBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        marginTop: 6,
+        gap: 4,
+    },
+    assignedBadgeText: {
+        color: '#FFFFFF',
+        fontSize: 11,
+        fontWeight: '600',
     },
     orderBadge: {
         paddingHorizontal: 10,

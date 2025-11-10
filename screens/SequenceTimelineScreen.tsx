@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, StatusBar, TouchableOpacity, Dimensions } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Text, SegmentedButtons } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -20,21 +20,17 @@ interface Props {
     route: SequenceTimelineScreenRouteProp;
 }
 
-interface MonthData {
-    monthKey: string;
-    monthLabel: string;
-    sessions: (Session & { sequence?: Sequence })[];
-}
+type ViewMode = 'day' | 'week' | 'month';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const DAY_WIDTH = 40;
 
 export default function SequenceTimelineScreen({ navigation, route }: Props) {
     const { classId, className, classColor } = route.params;
-    const [sessions, setSessions] = useState<(Session & { sequence?: Sequence })[]>([]);
-    const [sequences, setSequences] = useState<Sequence[]>([]);
+    const [sessions, setSessions] = useState<Session[]>([]);
+    const [sessionSequences, setSessionSequences] = useState<Map<string, Sequence>>(new Map());
+    const [viewMode, setViewMode] = useState<ViewMode>('week');
     const [loading, setLoading] = useState(true);
-    const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
+    const [currentDate, setCurrentDate] = useState(new Date());
 
     useEffect(() => {
         loadData();
@@ -43,21 +39,19 @@ export default function SequenceTimelineScreen({ navigation, route }: Props) {
     const loadData = async () => {
         try {
             setLoading(true);
-            const [sessionsData, sequencesData] = await Promise.all([
-                sessionService.getByClass(classId),
-                sequenceService.getByClass(classId),
-            ]);
+            const sessionsData = await sessionService.getByClass(classId);
 
             // Charger les séquences pour chaque séance
-            const sessionsWithSequences = await Promise.all(
-                sessionsData.map(async (session) => {
-                    const sequence = await sequenceService.getSequenceBySession(session.id);
-                    return { ...session, sequence: sequence || undefined };
-                })
-            );
+            const sequenceMap = new Map<string, Sequence>();
+            await Promise.all(sessionsData.map(async (session) => {
+                const sequence = await sequenceService.getSequenceBySession(session.id);
+                if (sequence) {
+                    sequenceMap.set(session.id, sequence);
+                }
+            }));
 
-            setSessions(sessionsWithSequences);
-            setSequences(sequencesData);
+            setSessions(sessionsData);
+            setSessionSequences(sequenceMap);
         } catch (error) {
             console.error('Error loading timeline data:', error);
         } finally {
@@ -65,213 +59,347 @@ export default function SequenceTimelineScreen({ navigation, route }: Props) {
         }
     };
 
-    const groupSessionsByMonth = (): MonthData[] => {
-        const groups: { [key: string]: (Session & { sequence?: Sequence })[] } = {};
+    const navigateDate = (direction: 'prev' | 'next') => {
+        const newDate = new Date(currentDate);
 
-        sessions
-            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-            .forEach((session) => {
-                const date = new Date(session.date);
-                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        switch (viewMode) {
+            case 'day':
+                newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
+                break;
+            case 'week':
+                newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
+                break;
+            case 'month':
+                newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
+                break;
+        }
 
-                if (!groups[monthKey]) {
-                    groups[monthKey] = [];
-                }
-                groups[monthKey].push(session);
-            });
-
-        return Object.entries(groups).map(([key, sessions]) => {
-            const monthLabel = new Date(sessions[0].date).toLocaleDateString('fr-FR', {
-                year: 'numeric',
-                month: 'long',
-            });
-            return { monthKey: key, monthLabel, sessions };
-        });
+        setCurrentDate(newDate);
     };
 
-    const renderMonthTimeline = (monthData: MonthData) => {
-        const firstDate = new Date(monthData.sessions[0].date);
-        const year = firstDate.getFullYear();
-        const month = firstDate.getMonth();
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const goToToday = () => {
+        setCurrentDate(new Date());
+    };
+
+    const getDateRangeLabel = () => {
+        const options: Intl.DateTimeFormatOptions = {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        };
+
+        switch (viewMode) {
+            case 'day':
+                return currentDate.toLocaleDateString('fr-FR', options);
+
+            case 'week':
+                const weekStart = getWeekStart(currentDate);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 6);
+
+                return `${weekStart.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('fr-FR', options)}`;
+
+            case 'month':
+                return currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+        }
+    };
+
+    const getWeekStart = (date: Date): Date => {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Lundi = début de semaine
+        return new Date(d.setDate(diff));
+    };
+
+    const getFilteredSessions = (): Session[] => {
+        switch (viewMode) {
+            case 'day':
+                return sessions.filter(session => {
+                    const sessionDate = new Date(session.date);
+                    return (
+                        sessionDate.getDate() === currentDate.getDate() &&
+                        sessionDate.getMonth() === currentDate.getMonth() &&
+                        sessionDate.getFullYear() === currentDate.getFullYear()
+                    );
+                });
+
+            case 'week':
+                const weekStart = getWeekStart(currentDate);
+                const weekEnd = new Date(weekStart);
+                weekEnd.setDate(weekEnd.getDate() + 7);
+
+                return sessions.filter(session => {
+                    const sessionDate = new Date(session.date);
+                    return sessionDate >= weekStart && sessionDate < weekEnd;
+                });
+
+            case 'month':
+                return sessions.filter(session => {
+                    const sessionDate = new Date(session.date);
+                    return (
+                        sessionDate.getMonth() === currentDate.getMonth() &&
+                        sessionDate.getFullYear() === currentDate.getFullYear()
+                    );
+                });
+        }
+    };
+
+    const renderDayView = () => {
+        const filteredSessions = getFilteredSessions();
+
+        if (filteredSessions.length === 0) {
+            return (
+                <View style={styles.emptyState}>
+                    <MaterialCommunityIcons name="calendar-blank" size={64} color="#CCC" />
+                    <Text style={styles.emptyText}>Aucune séance ce jour</Text>
+                </View>
+            );
+        }
 
         return (
-            <View key={monthData.monthKey} style={styles.monthContainer}>
-                <TouchableOpacity
-                    style={styles.monthHeader}
-                    onPress={() => setSelectedMonth(selectedMonth === monthData.monthKey ? null : monthData.monthKey)}
-                >
-                    <Text style={styles.monthTitle}>{monthData.monthLabel}</Text>
-                    <View style={styles.monthStats}>
-                        <MaterialCommunityIcons name="calendar" size={16} color="#666" />
-                        <Text style={styles.monthStatsText}>
-                            {monthData.sessions.length} séance{monthData.sessions.length > 1 ? 's' : ''}
-                        </Text>
-                    </View>
-                    <MaterialCommunityIcons
-                        name={selectedMonth === monthData.monthKey ? 'chevron-up' : 'chevron-down'}
-                        size={24}
-                        color="#666"
-                    />
-                </TouchableOpacity>
+            <ScrollView style={styles.scrollContent}>
+                {filteredSessions
+                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                    .map(session => {
+                        const sequence = sessionSequences.get(session.id);
+                        const sessionDate = new Date(session.date);
 
-                {selectedMonth === monthData.monthKey && (
-                    <View style={styles.timelineContainer}>
-                        {/* Grille des jours */}
-                        <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            style={styles.daysScroll}
-                        >
-                            <View style={styles.daysGrid}>
-                                {/* En-têtes des jours */}
-                                <View style={styles.daysHeader}>
-                                    {Array.from({ length: daysInMonth }, (_, i) => {
-                                        const day = i + 1;
-                                        const date = new Date(year, month, day);
-                                        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-                                        const hasSession = monthData.sessions.some(
-                                            (s) => new Date(s.date).getDate() === day
-                                        );
-
-                                        return (
-                                            <View
-                                                key={day}
-                                                style={[
-                                                    styles.dayCell,
-                                                    isWeekend && styles.weekendCell,
-                                                    hasSession && styles.hasSessionCell,
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.dayNumber,
-                                                        isWeekend && styles.weekendText,
-                                                        hasSession && styles.hasSessionText,
-                                                    ]}
-                                                >
-                                                    {day}
-                                                </Text>
-                                                <Text style={styles.dayName}>
-                                                    {date.toLocaleDateString('fr-FR', { weekday: 'narrow' })}
-                                                </Text>
-                                            </View>
-                                        );
-                                    })}
+                        return (
+                            <TouchableOpacity
+                                key={session.id}
+                                style={[
+                                    styles.sessionCard,
+                                    { borderLeftColor: classColor }
+                                ]}
+                                onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
+                            >
+                                <View style={styles.sessionTime}>
+                                    <Text style={styles.sessionTimeText}>
+                                        {sessionDate.toLocaleTimeString('fr-FR', {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </Text>
+                                    <Text style={styles.sessionDuration}>{session.duration} min</Text>
                                 </View>
 
-                                {/* Séquences */}
-                                <View style={styles.sequencesContainer}>
-                                    {sequences.map((sequence) => {
-                                        const sequenceSessions = monthData.sessions.filter(
-                                            (s) => s.sequence?.id === sequence.id
-                                        );
-
-                                        if (sequenceSessions.length === 0) return null;
-
-                                        return (
-                                            <View key={sequence.id} style={styles.sequenceRow}>
-                                                <View style={styles.sequenceLabel}>
-                                                    <View
-                                                        style={[
-                                                            styles.sequenceColorDot,
-                                                            { backgroundColor: sequence.color },
-                                                        ]}
-                                                    />
-                                                    <Text style={styles.sequenceLabelText} numberOfLines={1}>
-                                                        {sequence.name}
-                                                    </Text>
-                                                </View>
-                                                <View style={styles.sequenceTimeline}>
-                                                    {sequenceSessions.map((session) => {
-                                                        const sessionDay = new Date(session.date).getDate();
-                                                        const leftPosition = (sessionDay - 1) * DAY_WIDTH;
-
-                                                        return (
-                                                            <TouchableOpacity
-                                                                key={session.id}
-                                                                style={[
-                                                                    styles.sessionBlock,
-                                                                    {
-                                                                        left: leftPosition,
-                                                                        backgroundColor: sequence.color,
-                                                                    },
-                                                                ]}
-                                                                onPress={() =>
-                                                                    navigation.navigate('SessionDetail', {
-                                                                        sessionId: session.id,
-                                                                    })
-                                                                }
-                                                            >
-                                                                <Text
-                                                                    style={styles.sessionBlockText}
-                                                                    numberOfLines={1}
-                                                                >
-                                                                    {session.subject}
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        );
-                                                    })}
-                                                </View>
-                                            </View>
-                                        );
-                                    })}
-
-                                    {/* Séances sans séquence */}
-                                    {monthData.sessions.filter((s) => !s.sequence).length > 0 && (
-                                        <View style={styles.sequenceRow}>
-                                            <View style={styles.sequenceLabel}>
-                                                <View
-                                                    style={[
-                                                        styles.sequenceColorDot,
-                                                        { backgroundColor: '#ccc' },
-                                                    ]}
-                                                />
-                                                <Text style={styles.sequenceLabelText}>Sans séquence</Text>
-                                            </View>
-                                            <View style={styles.sequenceTimeline}>
-                                                {monthData.sessions
-                                                    .filter((s) => !s.sequence)
-                                                    .map((session) => {
-                                                        const sessionDay = new Date(session.date).getDate();
-                                                        const leftPosition = (sessionDay - 1) * DAY_WIDTH;
-
-                                                        return (
-                                                            <TouchableOpacity
-                                                                key={session.id}
-                                                                style={[
-                                                                    styles.sessionBlock,
-                                                                    {
-                                                                        left: leftPosition,
-                                                                        backgroundColor: '#ccc',
-                                                                    },
-                                                                ]}
-                                                                onPress={() =>
-                                                                    navigation.navigate('SessionDetail', {
-                                                                        sessionId: session.id,
-                                                                    })
-                                                                }
-                                                            >
-                                                                <Text
-                                                                    style={styles.sessionBlockText}
-                                                                    numberOfLines={1}
-                                                                >
-                                                                    {session.subject}
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        );
-                                                    })}
-                                            </View>
+                                <View style={styles.sessionContent}>
+                                    <Text style={styles.sessionSubject}>{session.subject}</Text>
+                                    {session.description && (
+                                        <Text style={styles.sessionDescription} numberOfLines={2}>
+                                            {session.description}
+                                        </Text>
+                                    )}
+                                    {sequence && (
+                                        <View style={[styles.sequenceBadge, { backgroundColor: sequence.color }]}>
+                                            <Text style={styles.sequenceBadgeText}>{sequence.name}</Text>
                                         </View>
                                     )}
                                 </View>
+                            </TouchableOpacity>
+                        );
+                    })}
+            </ScrollView>
+        );
+    };
+
+    const renderWeekView = () => {
+        const weekStart = getWeekStart(currentDate);
+        const days = Array.from({ length: 7 }, (_, i) => {
+            const date = new Date(weekStart);
+            date.setDate(date.getDate() + i);
+            return date;
+        });
+
+        const filteredSessions = getFilteredSessions();
+        const sessionsByDay = new Map<string, Session[]>();
+
+        filteredSessions.forEach(session => {
+            const sessionDate = new Date(session.date);
+            const dayKey = sessionDate.toISOString().split('T')[0];
+
+            if (!sessionsByDay.has(dayKey)) {
+                sessionsByDay.set(dayKey, []);
+            }
+            sessionsByDay.get(dayKey)!.push(session);
+        });
+
+        return (
+            <ScrollView style={styles.scrollContent} horizontal showsHorizontalScrollIndicator={false}>
+                <View style={styles.weekContainer}>
+                    {days.map(day => {
+                        const dayKey = day.toISOString().split('T')[0];
+                        const daySessions = sessionsByDay.get(dayKey) || [];
+                        const isToday = day.toDateString() === new Date().toDateString();
+
+                        return (
+                            <View key={dayKey} style={styles.dayColumn}>
+                                <View style={[styles.dayHeader, isToday && styles.todayHeader]}>
+                                    <Text style={[styles.dayName, isToday && styles.todayText]}>
+                                        {day.toLocaleDateString('fr-FR', { weekday: 'short' })}
+                                    </Text>
+                                    <Text style={[styles.dayNumber, isToday && styles.todayText]}>
+                                        {day.getDate()}
+                                    </Text>
+                                </View>
+
+                                <ScrollView style={styles.daySessionsContainer}>
+                                    {daySessions.length === 0 ? (
+                                        <View style={styles.noSession}>
+                                            <Text style={styles.noSessionText}>—</Text>
+                                        </View>
+                                    ) : (
+                                        daySessions
+                                            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                                            .map(session => {
+                                                const sequence = sessionSequences.get(session.id);
+                                                const sessionDate = new Date(session.date);
+
+                                                return (
+                                                    <TouchableOpacity
+                                                        key={session.id}
+                                                        style={[
+                                                            styles.weekSessionCard,
+                                                            { backgroundColor: sequence?.color || classColor }
+                                                        ]}
+                                                        onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
+                                                    >
+                                                        <Text style={styles.weekSessionTime}>
+                                                            {sessionDate.toLocaleTimeString('fr-FR', {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </Text>
+                                                        <Text style={styles.weekSessionSubject} numberOfLines={2}>
+                                                            {session.subject}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                );
+                                            })
+                                    )}
+                                </ScrollView>
                             </View>
-                        </ScrollView>
-                    </View>
-                )}
+                        );
+                    })}
+                </View>
+            </ScrollView>
+        );
+    };
+
+    const renderMonthView = () => {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+
+        // Trouver le lundi précédent le 1er du mois
+        const startDay = new Date(firstDay);
+        const dayOfWeek = startDay.getDay();
+        const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        startDay.setDate(startDay.getDate() - diff);
+
+        // Créer un tableau de 42 jours (6 semaines max)
+        const calendarDays: Date[] = [];
+        for (let i = 0; i < 42; i++) {
+            const day = new Date(startDay);
+            day.setDate(day.getDate() + i);
+            calendarDays.push(day);
+        }
+
+        const filteredSessions = getFilteredSessions();
+        const sessionsByDay = new Map<string, Session[]>();
+
+        filteredSessions.forEach(session => {
+            const sessionDate = new Date(session.date);
+            const dayKey = sessionDate.toISOString().split('T')[0];
+
+            if (!sessionsByDay.has(dayKey)) {
+                sessionsByDay.set(dayKey, []);
+            }
+            sessionsByDay.get(dayKey)!.push(session);
+        });
+
+        return (
+            <View style={styles.monthContainer}>
+                {/* Jours de la semaine */}
+                <View style={styles.weekDaysHeader}>
+                    {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, index) => (
+                        <Text key={index} style={styles.weekDayLabel}>{day}</Text>
+                    ))}
+                </View>
+
+                {/* Grille calendrier */}
+                <View style={styles.calendarGrid}>
+                    {calendarDays.map((day, index) => {
+                        const dayKey = day.toISOString().split('T')[0];
+                        const daySessions = sessionsByDay.get(dayKey) || [];
+                        const isCurrentMonth = day.getMonth() === month;
+                        const isToday = day.toDateString() === new Date().toDateString();
+
+                        return (
+                            <TouchableOpacity
+                                key={index}
+                                style={[
+                                    styles.calendarDay,
+                                    isToday && styles.calendarDayToday,
+                                    !isCurrentMonth && styles.calendarDayOtherMonth
+                                ]}
+                                onPress={() => {
+                                    setCurrentDate(day);
+                                    setViewMode('day');
+                                }}
+                            >
+                                <Text style={[
+                                    styles.calendarDayNumber,
+                                    !isCurrentMonth && styles.calendarDayNumberOther,
+                                    isToday && styles.calendarDayNumberToday
+                                ]}>
+                                    {day.getDate()}
+                                </Text>
+
+                                {daySessions.length > 0 && (
+                                    <View style={styles.sessionIndicators}>
+                                        {daySessions.slice(0, 3).map((session) => {
+                                            const sequence = sessionSequences.get(session.id);
+                                            return (
+                                                <View
+                                                    key={session.id}
+                                                    style={[
+                                                        styles.sessionDot,
+                                                        { backgroundColor: sequence?.color || classColor }
+                                                    ]}
+                                                />
+                                            );
+                                        })}
+                                        {daySessions.length > 3 && (
+                                            <Text style={styles.moreIndicator}>+{daySessions.length - 3}</Text>
+                                        )}
+                                    </View>
+                                )}
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
             </View>
         );
     };
+
+    if (loading) {
+        return (
+            <View style={styles.container}>
+                <StatusBar barStyle="light-content" />
+                <View style={[styles.header, { backgroundColor: classColor }]}>
+                    <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                        <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Timeline</Text>
+                </View>
+                <View style={styles.loadingContainer}>
+                    <Text>Chargement...</Text>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -279,33 +407,59 @@ export default function SequenceTimelineScreen({ navigation, route }: Props) {
 
             {/* Header */}
             <View style={[styles.header, { backgroundColor: classColor }]}>
-                <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                >
                     <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
-                <View style={styles.headerTextContainer}>
-                    <Text style={styles.headerTitle}>Timeline</Text>
-                    <Text style={styles.headerSubtitle}>{className}</Text>
+                <View style={styles.headerContent}>
+                    <Text style={styles.headerTitle}>{className}</Text>
+                    <Text style={styles.headerSubtitle}>Timeline</Text>
                 </View>
             </View>
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {loading ? (
-                    <View style={styles.loadingContainer}>
-                        <MaterialCommunityIcons name="loading" size={48} color="#ccc" />
-                        <Text style={styles.loadingText}>Chargement...</Text>
-                    </View>
-                ) : sessions.length === 0 ? (
-                    <View style={styles.emptyContainer}>
-                        <MaterialCommunityIcons name="calendar-blank" size={64} color="#ccc" />
-                        <Text style={styles.emptyTitle}>Aucune séance</Text>
-                        <Text style={styles.emptyText}>
-                            Créez des séances pour visualiser la timeline
-                        </Text>
-                    </View>
-                ) : (
-                    groupSessionsByMonth().map((monthData) => renderMonthTimeline(monthData))
-                )}
-            </ScrollView>
+            {/* Sélecteur de vue */}
+            <View style={styles.controlsContainer}>
+                <SegmentedButtons
+                    value={viewMode}
+                    onValueChange={(value) => setViewMode(value as ViewMode)}
+                    buttons={[
+                        { value: 'day', label: 'Jour', icon: 'calendar-today' },
+                        { value: 'week', label: 'Semaine', icon: 'calendar-week' },
+                        { value: 'month', label: 'Mois', icon: 'calendar-month' },
+                    ]}
+                    style={styles.segmentedButtons}
+                />
+            </View>
+
+            {/* Navigation date */}
+            <View style={styles.dateNavigation}>
+                <TouchableOpacity
+                    style={styles.navButton}
+                    onPress={() => navigateDate('prev')}
+                >
+                    <MaterialCommunityIcons name="chevron-left" size={24} color={classColor} />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.dateLabel} onPress={goToToday}>
+                    <Text style={styles.dateLabelText}>{getDateRangeLabel()}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={styles.navButton}
+                    onPress={() => navigateDate('next')}
+                >
+                    <MaterialCommunityIcons name="chevron-right" size={24} color={classColor} />
+                </TouchableOpacity>
+            </View>
+
+            {/* Contenu selon le mode */}
+            <View style={styles.content}>
+                {viewMode === 'day' && renderDayView()}
+                {viewMode === 'week' && renderWeekView()}
+                {viewMode === 'month' && renderMonthView()}
+            </View>
         </View>
     );
 }
@@ -313,199 +467,270 @@ export default function SequenceTimelineScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f5',
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingTop: 60,
-        paddingBottom: 16,
-        paddingHorizontal: 16,
-    },
-    backButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 12,
-    },
-    headerTextContainer: {
-        flex: 1,
-    },
-    headerTitle: {
-        fontSize: 24,
-        fontWeight: '700',
-        color: '#FFFFFF',
-        marginBottom: 2,
-    },
-    headerSubtitle: {
-        fontSize: 14,
-        color: 'rgba(255, 255, 255, 0.9)',
-    },
-    content: {
-        flex: 1,
+        backgroundColor: '#F5F5F5',
     },
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: SPACING.xl,
     },
-    loadingText: {
+    header: {
+        paddingTop: 60,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backButton: {
+        marginRight: 16,
+        padding: 4,
+    },
+    headerContent: {
+        flex: 1,
+    },
+    headerTitle: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#FFFFFF',
+    },
+    headerSubtitle: {
+        fontSize: 14,
+        color: '#FFFFFF',
+        opacity: 0.9,
+        marginTop: 2,
+    },
+    controlsContainer: {
+        backgroundColor: '#FFFFFF',
+        paddingHorizontal: SPACING.md,
+        paddingVertical: SPACING.sm,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+    },
+    segmentedButtons: {
+        backgroundColor: '#FFFFFF',
+    },
+    dateNavigation: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: SPACING.md,
+        paddingVertical: SPACING.sm,
+        backgroundColor: '#FFFFFF',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+    },
+    navButton: {
+        padding: 8,
+    },
+    dateLabel: {
+        flex: 1,
+        alignItems: 'center',
+    },
+    dateLabelText: {
         fontSize: 16,
-        color: '#666',
-        marginTop: SPACING.md,
+        fontWeight: '600',
+        color: '#333',
     },
-    emptyContainer: {
+    content: {
+        flex: 1,
+    },
+    scrollContent: {
+        flex: 1,
+    },
+
+    // Day View
+    emptyState: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        padding: SPACING.xl,
-    },
-    emptyTitle: {
-        fontSize: 20,
-        fontWeight: '700',
-        color: '#333',
-        marginTop: SPACING.md,
+        paddingTop: 100,
     },
     emptyText: {
-        fontSize: 14,
-        color: '#666',
-        textAlign: 'center',
-        marginTop: SPACING.xs,
+        fontSize: 16,
+        color: '#999',
+        marginTop: 16,
     },
-    monthContainer: {
-        marginBottom: SPACING.md,
-    },
-    monthHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        padding: SPACING.md,
+    sessionCard: {
+        backgroundColor: '#FFFFFF',
         marginHorizontal: SPACING.md,
+        marginVertical: SPACING.xs,
         borderRadius: 12,
+        padding: SPACING.md,
+        flexDirection: 'row',
+        borderLeftWidth: 4,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
     },
-    monthTitle: {
-        flex: 1,
-        fontSize: 18,
-        fontWeight: '700',
-        color: '#000',
-        textTransform: 'capitalize',
-    },
-    monthStats: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        marginRight: SPACING.sm,
-    },
-    monthStatsText: {
-        fontSize: 14,
-        color: '#666',
-    },
-    timelineContainer: {
-        marginTop: SPACING.sm,
-        backgroundColor: '#fff',
-        marginHorizontal: SPACING.md,
-        borderRadius: 12,
-        padding: SPACING.sm,
-    },
-    daysScroll: {
-        flex: 1,
-    },
-    daysGrid: {
-        minWidth: SCREEN_WIDTH - 32,
-    },
-    daysHeader: {
-        flexDirection: 'row',
-        borderBottomWidth: 2,
-        borderBottomColor: '#e0e0e0',
-        paddingBottom: SPACING.xs,
-        marginBottom: SPACING.sm,
-    },
-    dayCell: {
-        width: DAY_WIDTH,
+    sessionTime: {
+        marginRight: SPACING.md,
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 4,
+        minWidth: 60,
     },
-    weekendCell: {
-        backgroundColor: '#f9f9f9',
-    },
-    hasSessionCell: {
-        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-    },
-    dayNumber: {
-        fontSize: 14,
-        fontWeight: '600',
+    sessionTimeText: {
+        fontSize: 16,
+        fontWeight: '700',
         color: '#333',
     },
-    weekendText: {
-        color: '#999',
-    },
-    hasSessionText: {
-        color: '#4CAF50',
-        fontWeight: '700',
-    },
-    dayName: {
-        fontSize: 10,
+    sessionDuration: {
+        fontSize: 12,
         color: '#999',
         marginTop: 2,
     },
-    sequencesContainer: {
-        gap: SPACING.sm,
+    sessionContent: {
+        flex: 1,
     },
-    sequenceRow: {
-        flexDirection: 'row',
-        minHeight: 50,
-    },
-    sequenceLabel: {
-        width: 120,
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingRight: SPACING.xs,
-        gap: 6,
-    },
-    sequenceColorDot: {
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-    },
-    sequenceLabelText: {
-        fontSize: 12,
+    sessionSubject: {
+        fontSize: 16,
         fontWeight: '600',
         color: '#333',
-        flex: 1,
+        marginBottom: 4,
     },
-    sequenceTimeline: {
-        flex: 1,
-        position: 'relative',
-        minHeight: 40,
+    sessionDescription: {
+        fontSize: 14,
+        color: '#666',
+        lineHeight: 20,
     },
-    sessionBlock: {
-        position: 'absolute',
-        width: DAY_WIDTH - 4,
-        height: 36,
+    sequenceBadge: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
         borderRadius: 6,
+        marginTop: 8,
+    },
+    sequenceBadgeText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#FFFFFF',
+    },
+
+    // Week View
+    weekContainer: {
+        flexDirection: 'row',
+        paddingHorizontal: SPACING.xs,
+    },
+    dayColumn: {
+        width: 120,
+        marginHorizontal: SPACING.xs,
+    },
+    dayHeader: {
+        alignItems: 'center',
+        paddingVertical: SPACING.sm,
+        backgroundColor: '#F5F5F5',
+        borderRadius: 8,
+        marginBottom: SPACING.xs,
+    },
+    todayHeader: {
+        backgroundColor: '#007AFF',
+    },
+    dayName: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#666',
+        textTransform: 'uppercase',
+    },
+    dayNumber: {
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#333',
+        marginTop: 2,
+    },
+    todayText: {
+        color: '#FFFFFF',
+    },
+    daySessionsContainer: {
+        flex: 1,
+    },
+    noSession: {
+        alignItems: 'center',
+        paddingVertical: SPACING.lg,
+    },
+    noSessionText: {
+        fontSize: 24,
+        color: '#DDD',
+    },
+    weekSessionCard: {
+        padding: SPACING.sm,
+        borderRadius: 8,
+        marginBottom: SPACING.xs,
+    },
+    weekSessionTime: {
+        fontSize: 11,
+        fontWeight: '600',
+        color: '#FFFFFF',
+        marginBottom: 4,
+    },
+    weekSessionSubject: {
+        fontSize: 12,
+        fontWeight: '500',
+        color: '#FFFFFF',
+    },
+
+    // Month View
+    monthContainer: {
+        padding: SPACING.sm,
+    },
+    weekDaysHeader: {
+        flexDirection: 'row',
+        marginBottom: SPACING.xs,
+    },
+    weekDayLabel: {
+        flex: 1,
+        textAlign: 'center',
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#666',
+    },
+    calendarGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+    },
+    calendarDay: {
+        width: `${100 / 7}%`,
+        aspectRatio: 1,
         padding: 4,
+        borderWidth: 0.5,
+        borderColor: '#E0E0E0',
+        backgroundColor: '#FFFFFF',
+    },
+    calendarDayToday: {
+        backgroundColor: '#E3F2FD',
+        borderColor: '#007AFF',
+    },
+    calendarDayOtherMonth: {
+        backgroundColor: '#FAFAFA',
+    },
+    calendarDayNumber: {
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#333',
+        textAlign: 'center',
+    },
+    calendarDayNumberOther: {
+        color: '#CCC',
+    },
+    calendarDayNumberToday: {
+        color: '#007AFF',
+    },
+    sessionIndicators: {
+        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 2,
-        elevation: 2,
+        marginTop: 4,
+        flexWrap: 'wrap',
+        gap: 2,
     },
-    sessionBlockText: {
-        fontSize: 10,
-        fontWeight: '600',
-        color: '#fff',
-        textAlign: 'center',
+    sessionDot: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+    },
+    moreIndicator: {
+        fontSize: 8,
+        color: '#666',
+        marginLeft: 2,
     },
 });
