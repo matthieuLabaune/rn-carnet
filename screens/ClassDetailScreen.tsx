@@ -197,7 +197,7 @@ export default function ClassDetailScreen({ navigation, route }: Props) {
                         </View>
                         <View style={styles.scheduleContent}>
                             <Text style={[styles.scheduleTitle, { color: theme.text }]}>
-                                📚 Séquences Pédagogiques
+                                Séquences Pédagogiques
                             </Text>
                             <Text style={[styles.scheduleSubtitle, { color: theme.textSecondary }]}>
                                 Organiser le programme en séquences thématiques

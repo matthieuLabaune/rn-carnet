@@ -9,7 +9,6 @@ import { Sequence } from '../types';
 import { sequenceService } from '../services';
 import { SPACING } from '../utils';
 import SequenceFormDialog from '../components/SequenceFormDialog';
-import SpeedDialFAB from '../components/SpeedDialFAB';
 
 type SequencePlanningScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -37,13 +36,8 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        navigation.setOptions({
-            title: `📚 Séquences - ${className}`,
-            headerStyle: { backgroundColor: classColor },
-            headerTintColor: '#fff',
-        });
         loadData();
-    }, [classId, className, classColor]);
+    }, [classId]);
 
     const loadData = async () => {
         try {
@@ -197,10 +191,30 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
+
+            {/* Header */}
+            <View style={[styles.header, { backgroundColor: classColor }]}>
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                >
+                    <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>{className}</Text>
+                {sequences.length > 0 && (
+                    <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={openCreateDialog}
+                    >
+                        <MaterialCommunityIcons name="plus" size={24} color="#FFFFFF" />
+                    </TouchableOpacity>
+                )}
+            </View>
+
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 {/* Statistiques */}
                 <View style={styles.statsCard}>
-                    <Text style={styles.statsTitle}>📊 Vue d'ensemble</Text>
+                    <Text style={styles.statsTitle}>Vue d'ensemble</Text>
 
                     <View style={styles.progressContainer}>
                         <Text style={styles.progressLabel}>
@@ -249,18 +263,23 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
 
                 {/* Liste des séquences */}
                 <View style={styles.sequencesHeader}>
-                    <Text style={styles.sectionTitle}>📚 Séquences du Programme</Text>
+                    <Text style={styles.sectionTitle}>Séquences du Programme</Text>
                 </View>
 
                 {sequences.length === 0 ? (
-                    <View style={styles.emptyCard}>
+                    <TouchableOpacity 
+                        style={styles.emptyCard}
+                        onPress={openCreateDialog}
+                        activeOpacity={0.7}
+                    >
+                        <MaterialCommunityIcons name="book-open-page-variant" size={48} color="#ccc" />
                         <Text style={styles.emptyText}>
                             Aucune séquence créée pour le moment.
                         </Text>
                         <Text style={styles.emptySubtext}>
                             Créez votre première séquence pédagogique !
                         </Text>
-                    </View>
+                    </TouchableOpacity>
                 ) : (
                     sequences.map((sequence, index) => (
                         <View key={sequence.id} style={styles.sequenceCard}>
@@ -341,16 +360,6 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
                 )}
             </ScrollView>
 
-            <SpeedDialFAB
-                actions={[
-                    {
-                        icon: 'plus',
-                        label: 'Créer une séquence',
-                        onPress: openCreateDialog,
-                    },
-                ]}
-            />
-
             <SequenceFormDialog
                 visible={dialogVisible}
                 onDismiss={closeDialog}
@@ -366,6 +375,36 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 60,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    headerTitle: {
+        flex: 1,
+        fontSize: 24,
+        fontWeight: '700',
+        color: '#FFFFFF',
+    },
+    addButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     scrollView: {
         flex: 1,
@@ -462,19 +501,22 @@ const styles = StyleSheet.create({
     emptyCard: {
         backgroundColor: '#fff',
         borderRadius: 12,
-        padding: SPACING.lg,
+        padding: SPACING.xl,
         alignItems: 'center',
+        justifyContent: 'center',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 2,
+        minHeight: 200,
     },
     emptyText: {
         fontSize: 16,
         color: '#666',
         marginBottom: SPACING.xs,
         textAlign: 'center',
+        marginTop: SPACING.md,
     },
     emptySubtext: {
         fontSize: 14,
@@ -586,10 +628,5 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
         marginLeft: SPACING.xs,
-    },
-    fab: {
-        position: 'absolute',
-        right: SPACING.md,
-        bottom: SPACING.md,
     },
 });
