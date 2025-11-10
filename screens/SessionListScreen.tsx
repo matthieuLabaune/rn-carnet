@@ -152,7 +152,7 @@ export default function SessionListScreen({ navigation, route }: Props) {
                             return (
                                 <TouchableOpacity
                                     key={session.id}
-                                    style={[styles.sessionCard, { backgroundColor: theme.surface, borderLeftColor: sequence?.color || classData?.color }]}
+                                    style={[styles.sessionCard, { backgroundColor: theme.surface, borderLeftColor: classData?.color }]}
                                     onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
                                 >
                                     <View style={styles.sessionHeader}>
@@ -170,9 +170,8 @@ export default function SessionListScreen({ navigation, route }: Props) {
                                             </Text>
                                         )}
                                         {sequence && (
-                                            <View style={styles.sequenceInfo}>
-                                                <MaterialCommunityIcons name="book-open-page-variant" size={14} color={sequence.color} />
-                                                <Text style={[styles.sequenceText, { color: sequence.color }]}>
+                                            <View style={[styles.sequenceBadge, { backgroundColor: sequence.color }]}>
+                                                <Text style={styles.sequenceBadgeText}>
                                                     {sequence.name}
                                                 </Text>
                                             </View>
@@ -324,18 +323,17 @@ const styles = StyleSheet.create({
         lineHeight: 20,
         marginBottom: 8,
     },
-    sequenceInfo: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        marginTop: 4,
-        paddingTop: 8,
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(0, 0, 0, 0.05)',
+    sequenceBadge: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 6,
+        marginTop: 8,
     },
-    sequenceText: {
-        fontSize: 13,
+    sequenceBadgeText: {
+        fontSize: 12,
         fontWeight: '600',
+        color: '#FFFFFF',
     },
     sessionFooter: {
         flexDirection: 'row',

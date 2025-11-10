@@ -5,8 +5,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-import { sessionService, classService, attendanceService, studentService, evaluationService } from '../services';
-import { Session, Class, Attendance, Student, Evaluation } from '../types';
+import { sessionService, classService, attendanceService, studentService, evaluationService, sequenceService } from '../services';
+import { Session, Class, Attendance, Student, Evaluation, Sequence } from '../types';
 import SpeedDialFAB from '../components/SpeedDialFAB';
 import AttendanceDialog from '../components/AttendanceDialog';
 import { useTheme } from '../contexts/ThemeContext';
@@ -30,6 +30,7 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
     const { sessionId } = route.params;
     const [session, setSession] = useState<Session | null>(null);
     const [classData, setClassData] = useState<Class | null>(null);
+    const [sequence, setSequence] = useState<Sequence | null>(null);
     const [attendances, setAttendances] = useState<AttendanceWithStudent[]>([]);
     const [students, setStudents] = useState<Student[]>([]);
     const [linkedEvaluation, setLinkedEvaluation] = useState<Evaluation | null>(null);
@@ -59,6 +60,9 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
 
             const classInfo = await classService.getById(sessionData.classId);
             setClassData(classInfo);
+
+            const sequenceData = await sequenceService.getSequenceBySession(sessionId);
+            setSequence(sequenceData);
 
             const [attendancesData, studentsData, evaluationData] = await Promise.all([
                 attendanceService.getBySession(sessionId),
@@ -233,6 +237,20 @@ export default function SessionDetailScreen({ navigation, route }: Props) {
                                 <Text style={[styles.infoText, { color: theme.textSecondary, flex: 1 }]}>
                                     {session.description}
                                 </Text>
+                            </View>
+                        )}
+
+                        {sequence && (
+                            <View style={[styles.infoRow, { marginTop: 12, alignItems: 'flex-start' }]}>
+                                <MaterialCommunityIcons name="book-open-page-variant" size={20} color={theme.textSecondary} style={{ marginTop: 2 }} />
+                                <View style={styles.sequenceInfoContainer}>
+                                    <Text style={[styles.sequenceLabel, { color: theme.textSecondary }]}>Séquence pédagogique</Text>
+                                    <View style={[styles.sequenceBadge, { backgroundColor: sequence.color }]}>
+                                        <Text style={styles.sequenceBadgeText}>
+                                            {sequence.name}
+                                        </Text>
+                                    </View>
+                                </View>
                             </View>
                         )}
                     </Card.Content>
@@ -601,5 +619,23 @@ const styles = StyleSheet.create({
     createEvaluationText: {
         fontSize: 14,
         fontWeight: '600',
+    },
+    sequenceInfoContainer: {
+        flex: 1,
+    },
+    sequenceLabel: {
+        fontSize: 12,
+        marginBottom: 6,
+    },
+    sequenceBadge: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 6,
+    },
+    sequenceBadgeText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#FFFFFF',
     },
 });

@@ -5,8 +5,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
-import { sessionService, classService } from '../services';
-import { Session, Class } from '../types';
+import { sessionService, classService, sequenceService } from '../services';
+import { Session, Class, Sequence } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -16,6 +16,7 @@ export default function AllSessionsScreen() {
     const navigation = useNavigation<NavigationProp>();
     const [sessions, setSessions] = useState<Session[]>([]);
     const [classes, setClasses] = useState<Class[]>([]);
+    const [sessionSequences, setSessionSequences] = useState<Map<string, Sequence>>(new Map());
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -35,6 +36,18 @@ export default function AllSessionsScreen() {
 
             allSessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             setSessions(allSessions);
+
+            // Charger les séquences pour chaque séance
+            const sequenceMap = new Map<string, Sequence>();
+            await Promise.all(
+                allSessions.map(async (session) => {
+                    const sequence = await sequenceService.getSequenceBySession(session.id);
+                    if (sequence) {
+                        sequenceMap.set(session.id, sequence);
+                    }
+                })
+            );
+            setSessionSequences(sequenceMap);
         } catch (error) {
             console.error('Error loading sessions:', error);
         } finally {
@@ -107,45 +120,55 @@ export default function AllSessionsScreen() {
                     </View>
                 ) : (
                     <View style={styles.list}>
-                        {sessions.map((session) => (
-                            <TouchableOpacity
-                                key={session.id}
-                                style={[styles.sessionCard, { backgroundColor: theme.cardBackground, borderLeftColor: getClassColor(session.classId) }]}
-                                onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
-                            >
-                                <View style={styles.sessionHeader}>
-                                    <View style={styles.sessionTitleRow}>
-                                        <Text style={[styles.sessionSubject, { color: theme.text }]}>{session.subject}</Text>
-                                        <View style={[styles.statusBadge, getStatusStyle(session.status)]}>
-                                            <Text style={[styles.statusText, { color: getStatusStyle(session.status).color }]}>
-                                                {getStatusLabel(session.status)}
+                        {sessions.map((session) => {
+                            const sequence = sessionSequences.get(session.id);
+                            return (
+                                <TouchableOpacity
+                                    key={session.id}
+                                    style={[styles.sessionCard, { backgroundColor: theme.cardBackground, borderLeftColor: getClassColor(session.classId) }]}
+                                    onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
+                                >
+                                    <View style={styles.sessionHeader}>
+                                        <View style={styles.sessionTitleRow}>
+                                            <Text style={[styles.sessionSubject, { color: theme.text }]}>{session.subject}</Text>
+                                            <View style={[styles.statusBadge, getStatusStyle(session.status)]}>
+                                                <Text style={[styles.statusText, { color: getStatusStyle(session.status).color }]}>
+                                                    {getStatusLabel(session.status)}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        {session.description && (
+                                            <Text style={[styles.sessionDescription, { color: theme.textSecondary }]} numberOfLines={2}>
+                                                {session.description}
+                                            </Text>
+                                        )}
+                                        {sequence && (
+                                            <View style={[styles.sequenceBadge, { backgroundColor: sequence.color }]}>
+                                                <Text style={styles.sequenceBadgeText}>
+                                                    {sequence.name}
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+
+                                    <View style={styles.sessionFooter}>
+                                        <View style={styles.classTag}>
+                                            <View style={[styles.classColorDot, { backgroundColor: getClassColor(session.classId) }]} />
+                                            <Text style={[styles.className, { color: theme.textSecondary }]}>{getClassName(session.classId)}</Text>
+                                        </View>
+                                        <View style={styles.dateInfo}>
+                                            <MaterialCommunityIcons name="clock-outline" size={14} color={theme.textTertiary} />
+                                            <Text style={[styles.dateText, { color: theme.textSecondary }]}>
+                                                {new Date(session.date).toLocaleDateString('fr-FR', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                })}
                                             </Text>
                                         </View>
                                     </View>
-                                    {session.description && (
-                                        <Text style={[styles.sessionDescription, { color: theme.textSecondary }]} numberOfLines={2}>
-                                            {session.description}
-                                        </Text>
-                                    )}
-                                </View>
-
-                                <View style={styles.sessionFooter}>
-                                    <View style={styles.classTag}>
-                                        <View style={[styles.classColorDot, { backgroundColor: getClassColor(session.classId) }]} />
-                                        <Text style={[styles.className, { color: theme.textSecondary }]}>{getClassName(session.classId)}</Text>
-                                    </View>
-                                    <View style={styles.dateInfo}>
-                                        <MaterialCommunityIcons name="clock-outline" size={14} color={theme.textTertiary} />
-                                        <Text style={[styles.dateText, { color: theme.textSecondary }]}>
-                                            {new Date(session.date).toLocaleDateString('fr-FR', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                            })}
-                                        </Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
                 )}
             </ScrollView>
@@ -236,6 +259,19 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#666',
         lineHeight: 20,
+        marginBottom: 8,
+    },
+    sequenceBadge: {
+        alignSelf: 'flex-start',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 6,
+        marginTop: 8,
+    },
+    sequenceBadgeText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#FFFFFF',
     },
     sessionFooter: {
         flexDirection: 'row',
