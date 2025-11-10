@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Text, Card, FAB, IconButton, ProgressBar } from 'react-native-paper';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, StatusBar } from 'react-native';
+import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
@@ -8,6 +9,7 @@ import { Sequence } from '../types';
 import { sequenceService } from '../services';
 import { SPACING } from '../utils';
 import SequenceFormDialog from '../components/SequenceFormDialog';
+import SpeedDialFAB from '../components/SpeedDialFAB';
 
 type SequencePlanningScreenNavigationProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -194,48 +196,54 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
 
     return (
         <View style={styles.container}>
+            <StatusBar barStyle="light-content" />
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 {/* Statistiques */}
-                <Card style={styles.statsCard}>
-                    <Card.Content>
-                        <Text style={styles.statsTitle}>📊 Vue d'ensemble</Text>
+                <View style={styles.statsCard}>
+                    <Text style={styles.statsTitle}>📊 Vue d'ensemble</Text>
 
-                        <View style={styles.progressContainer}>
-                            <Text style={styles.progressLabel}>
-                                Progression globale : {statistics.completionPercentage}%
-                            </Text>
-                            <ProgressBar
-                                progress={statistics.completionPercentage / 100}
-                                color={classColor}
-                                style={styles.progressBar}
+                    <View style={styles.progressContainer}>
+                        <Text style={styles.progressLabel}>
+                            Progression globale : {statistics.completionPercentage}%
+                        </Text>
+                        <View style={styles.progressBarContainer}>
+                            <View
+                                style={[
+                                    styles.progressBarFill,
+                                    {
+                                        backgroundColor: classColor,
+                                        width: `${statistics.completionPercentage}%`,
+                                    },
+                                ]}
                             />
                         </View>
+                    </View>
 
-                        <View style={styles.statsGrid}>
-                            <View style={styles.statItem}>
-                                <Text style={styles.statValue}>{statistics.totalSessions}</Text>
-                                <Text style={styles.statLabel}>Séances générées</Text>
-                            </View>
-                            <View style={styles.statItem}>
-                                <Text style={styles.statValue}>{statistics.totalSequences}</Text>
-                                <Text style={styles.statLabel}>Séquences créées</Text>
-                            </View>
-                            <View style={styles.statItem}>
-                                <Text style={styles.statValue}>{statistics.assignedSessions}</Text>
-                                <Text style={styles.statLabel}>Séances assignées</Text>
-                            </View>
-                            <View style={styles.statItem}>
-                                <Text style={styles.statValue}>{statistics.unassignedSessions}</Text>
-                                <Text style={styles.statLabel}>Séances libres</Text>
-                            </View>
+                    <View style={styles.statsGrid}>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statValue}>{statistics.totalSessions}</Text>
+                            <Text style={styles.statLabel}>Séances générées</Text>
                         </View>
-                    </Card.Content>
-                </Card>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statValue}>{statistics.totalSequences}</Text>
+                            <Text style={styles.statLabel}>Séquences créées</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statValue}>{statistics.assignedSessions}</Text>
+                            <Text style={styles.statLabel}>Séances assignées</Text>
+                        </View>
+                        <View style={styles.statItem}>
+                            <Text style={styles.statValue}>{statistics.unassignedSessions}</Text>
+                            <Text style={styles.statLabel}>Séances libres</Text>
+                        </View>
+                    </View>
+                </View>
 
                 {/* Actions rapides */}
                 {sequences.length > 0 && statistics.unassignedSessions > 0 && (
                     <TouchableOpacity onPress={handleAutoAssign} style={styles.autoAssignButton}>
-                        <Text style={styles.autoAssignText}>⚡ Auto-assigner toutes les séquences</Text>
+                        <MaterialCommunityIcons name="flash" size={20} color="#fff" />
+                        <Text style={styles.autoAssignText}>Auto-assigner toutes les séquences</Text>
                     </TouchableOpacity>
                 )}
 
@@ -245,103 +253,102 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
                 </View>
 
                 {sequences.length === 0 ? (
-                    <Card style={styles.emptyCard}>
-                        <Card.Content>
-                            <Text style={styles.emptyText}>
-                                Aucune séquence créée pour le moment.
-                            </Text>
-                            <Text style={styles.emptySubtext}>
-                                Créez votre première séquence pédagogique !
-                            </Text>
-                        </Card.Content>
-                    </Card>
+                    <View style={styles.emptyCard}>
+                        <Text style={styles.emptyText}>
+                            Aucune séquence créée pour le moment.
+                        </Text>
+                        <Text style={styles.emptySubtext}>
+                            Créez votre première séquence pédagogique !
+                        </Text>
+                    </View>
                 ) : (
-                    sequences.map((sequence, index) => {
-                        const progress = getSequenceProgress(sequence);
-                        return (
-                            <Card key={sequence.id} style={styles.sequenceCard}>
-                                <Card.Content>
-                                    <View style={styles.sequenceHeader}>
-                                        <View style={styles.sequenceHeaderLeft}>
-                                            <View
-                                                style={[
-                                                    styles.colorDot,
-                                                    { backgroundColor: sequence.color },
-                                                ]}
-                                            />
-                                            <View style={styles.sequenceHeaderText}>
-                                                <Text style={styles.sequenceName}>
-                                                    {getStatusIcon(sequence.status)} Séquence {index + 1}
-                                                </Text>
-                                                <Text style={styles.sequenceTitle}>{sequence.name}</Text>
-                                            </View>
-                                        </View>
-                                        <View style={styles.sequenceActions}>
-                                            <IconButton
-                                                icon="pencil"
-                                                size={20}
-                                                onPress={() => openEditDialog(sequence)}
-                                            />
-                                            <IconButton
-                                                icon="delete"
-                                                size={20}
-                                                onPress={() => handleDeleteSequence(sequence)}
-                                            />
-                                        </View>
-                                    </View>
-
-                                    {sequence.theme && (
-                                        <Text style={styles.sequenceTheme}>📖 {sequence.theme}</Text>
-                                    )}
-
-                                    {sequence.description && (
-                                        <Text style={styles.sequenceDescription}>
-                                            {sequence.description}
+                    sequences.map((sequence, index) => (
+                        <View key={sequence.id} style={styles.sequenceCard}>
+                            <View style={styles.sequenceHeader}>
+                                <View style={styles.sequenceHeaderLeft}>
+                                    <View
+                                        style={[
+                                            styles.colorDot,
+                                            { backgroundColor: sequence.color },
+                                        ]}
+                                    />
+                                    <View style={styles.sequenceHeaderText}>
+                                        <Text style={styles.sequenceName}>
+                                            {getStatusIcon(sequence.status)} Séquence {index + 1}
                                         </Text>
-                                    )}
-
-                                    <View style={styles.sequenceStats}>
-                                        <Text style={styles.sequenceStatText}>
-                                            {sequence.sessionCount} séances • {getStatusLabel(sequence.status)}
-                                        </Text>
+                                        <Text style={styles.sequenceTitle}>{sequence.name}</Text>
                                     </View>
-
-                                    {sequence.objectives && sequence.objectives.length > 0 && (
-                                        <View style={styles.objectivesContainer}>
-                                            <Text style={styles.objectivesTitle}>Objectifs :</Text>
-                                            {sequence.objectives.slice(0, 2).map((obj, idx) => (
-                                                <Text key={idx} style={styles.objectiveText}>
-                                                    • {obj}
-                                                </Text>
-                                            ))}
-                                            {sequence.objectives.length > 2 && (
-                                                <Text style={styles.objectiveMore}>
-                                                    +{sequence.objectives.length - 2} autre(s)
-                                                </Text>
-                                            )}
-                                        </View>
-                                    )}
-
+                                </View>
+                                <View style={styles.sequenceActions}>
                                     <TouchableOpacity
-                                        style={[styles.assignButton, { backgroundColor: sequence.color }]}
-                                        onPress={() => handleAssignSequence(sequence)}
+                                        onPress={() => openEditDialog(sequence)}
+                                        style={styles.iconButton}
                                     >
-                                        <Text style={styles.assignButtonText}>
-                                            📅 Assigner aux séances
-                                        </Text>
+                                        <MaterialCommunityIcons name="pencil" size={20} color="#666" />
                                     </TouchableOpacity>
-                                </Card.Content>
-                            </Card>
-                        );
-                    })
+                                    <TouchableOpacity
+                                        onPress={() => handleDeleteSequence(sequence)}
+                                        style={styles.iconButton}
+                                    >
+                                        <MaterialCommunityIcons name="delete" size={20} color="#666" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            {sequence.theme && (
+                                <Text style={styles.sequenceTheme}>📖 {sequence.theme}</Text>
+                            )}
+
+                            {sequence.description && (
+                                <Text style={styles.sequenceDescription}>
+                                    {sequence.description}
+                                </Text>
+                            )}
+
+                            <View style={styles.sequenceStats}>
+                                <Text style={styles.sequenceStatText}>
+                                    {sequence.sessionCount} séances • {getStatusLabel(sequence.status)}
+                                </Text>
+                            </View>
+
+                            {sequence.objectives && sequence.objectives.length > 0 && (
+                                <View style={styles.objectivesContainer}>
+                                    <Text style={styles.objectivesTitle}>Objectifs :</Text>
+                                    {sequence.objectives.slice(0, 2).map((obj, idx) => (
+                                        <Text key={idx} style={styles.objectiveText}>
+                                            • {obj}
+                                        </Text>
+                                    ))}
+                                    {sequence.objectives.length > 2 && (
+                                        <Text style={styles.objectiveMore}>
+                                            +{sequence.objectives.length - 2} autre(s)
+                                        </Text>
+                                    )}
+                                </View>
+                            )}
+
+                            <TouchableOpacity
+                                style={[styles.assignButton, { backgroundColor: sequence.color }]}
+                                onPress={() => handleAssignSequence(sequence)}
+                            >
+                                <MaterialCommunityIcons name="calendar-check" size={18} color="#fff" />
+                                <Text style={styles.assignButtonText}>
+                                    Assigner aux séances
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    ))
                 )}
             </ScrollView>
 
-            <FAB
-                icon="plus"
-                style={[styles.fab, { backgroundColor: classColor }]}
-                onPress={openCreateDialog}
-                label="Créer une séquence"
+            <SpeedDialFAB
+                actions={[
+                    {
+                        icon: 'plus',
+                        label: 'Créer une séquence',
+                        onPress: openCreateDialog,
+                    },
+                ]}
             />
 
             <SequenceFormDialog
@@ -366,11 +373,19 @@ const styles = StyleSheet.create({
     },
     statsCard: {
         marginBottom: SPACING.md,
-        elevation: 2,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: SPACING.md,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     statsTitle: {
         fontSize: 18,
-        fontWeight: '600',
+        fontWeight: '700',
+        color: '#000',
         marginBottom: SPACING.md,
     },
     progressContainer: {
@@ -380,9 +395,16 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#666',
         marginBottom: SPACING.xs,
+        fontWeight: '600',
     },
-    progressBar: {
+    progressBarContainer: {
         height: 8,
+        borderRadius: 4,
+        backgroundColor: '#e0e0e0',
+        overflow: 'hidden',
+    },
+    progressBarFill: {
+        height: '100%',
         borderRadius: 4,
     },
     statsGrid: {
@@ -400,45 +422,59 @@ const styles = StyleSheet.create({
     },
     statValue: {
         fontSize: 24,
-        fontWeight: 'bold',
-        color: '#2196F3',
+        fontWeight: '700',
+        color: '#000',
     },
     statLabel: {
         fontSize: 12,
         color: '#666',
-        marginTop: SPACING.xs,
+        marginTop: 4,
         textAlign: 'center',
     },
     autoAssignButton: {
-        backgroundColor: '#4CAF50',
+        flexDirection: 'row',
+        backgroundColor: '#007AFF',
         padding: SPACING.md,
-        borderRadius: 8,
+        borderRadius: 12,
         marginBottom: SPACING.md,
         alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
         elevation: 2,
     },
     autoAssignText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
+        marginLeft: SPACING.xs,
     },
     sequencesHeader: {
         marginBottom: SPACING.md,
     },
     sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        color: '#333',
+        fontSize: 20,
+        fontWeight: '700',
+        color: '#000',
     },
     emptyCard: {
-        marginBottom: SPACING.md,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: SPACING.lg,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
         elevation: 2,
     },
     emptyText: {
         fontSize: 16,
         color: '#666',
+        marginBottom: SPACING.xs,
         textAlign: 'center',
-        marginBottom: SPACING.sm,
     },
     emptySubtext: {
         fontSize: 14,
@@ -446,7 +482,14 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     sequenceCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: SPACING.md,
         marginBottom: SPACING.md,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
         elevation: 2,
     },
     sequenceHeader: {
@@ -457,15 +500,15 @@ const styles = StyleSheet.create({
     },
     sequenceHeaderLeft: {
         flexDirection: 'row',
-        alignItems: 'flex-start',
         flex: 1,
-        gap: SPACING.sm,
+        alignItems: 'flex-start',
     },
     colorDot: {
-        width: 16,
-        height: 16,
-        borderRadius: 8,
-        marginTop: 4,
+        width: 12,
+        height: 12,
+        borderRadius: 6,
+        marginTop: 6,
+        marginRight: SPACING.sm,
     },
     sequenceHeaderText: {
         flex: 1,
@@ -483,6 +526,9 @@ const styles = StyleSheet.create({
     sequenceActions: {
         flexDirection: 'row',
         marginLeft: SPACING.sm,
+    },
+    iconButton: {
+        padding: 8,
     },
     sequenceTheme: {
         fontSize: 14,
@@ -528,15 +574,18 @@ const styles = StyleSheet.create({
         marginTop: SPACING.xs,
     },
     assignButton: {
+        flexDirection: 'row',
         padding: SPACING.sm,
         borderRadius: 8,
         alignItems: 'center',
+        justifyContent: 'center',
         marginTop: SPACING.xs,
     },
     assignButtonText: {
         color: '#fff',
         fontSize: 14,
         fontWeight: '600',
+        marginLeft: SPACING.xs,
     },
     fab: {
         position: 'absolute',

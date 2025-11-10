@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Modal } from 'react-native';
-import { TextInput, Text, IconButton } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { Portal, Modal, Text, Chip } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SPACING } from '../utils';
-import { COLORS } from '../utils/constants';
 import { SequenceFormData } from '../types';
 
 interface SequenceFormDialogProps {
@@ -37,7 +37,7 @@ export default function SequenceFormDialog({
     const [sessionCount, setSessionCount] = useState(5);
     const [selectedColor, setSelectedColor] = useState(SEQUENCE_COLORS[0]);
     const [objectives, setObjectives] = useState<string[]>([]);
-    const [currentObjective, setCurrentObjective] = useState('');
+    const [newObjective, setNewObjective] = useState('');
     const [error, setError] = useState('');
 
     useEffect(() => {
@@ -60,7 +60,7 @@ export default function SequenceFormDialog({
         setSessionCount(5);
         setSelectedColor(SEQUENCE_COLORS[0]);
         setObjectives([]);
-        setCurrentObjective('');
+        setNewObjective('');
         setError('');
     };
 
@@ -103,222 +103,234 @@ export default function SequenceFormDialog({
     };
 
     const addObjective = () => {
-        if (currentObjective.trim()) {
-            setObjectives([...objectives, currentObjective.trim()]);
-            setCurrentObjective('');
+        if (newObjective.trim() && !objectives.includes(newObjective.trim())) {
+            setObjectives([...objectives, newObjective.trim()]);
+            setNewObjective('');
         }
     };
 
-    const removeObjective = (index: number) => {
-        setObjectives(objectives.filter((_, i) => i !== index));
+    const removeObjective = (objective: string) => {
+        setObjectives(objectives.filter(obj => obj !== objective));
     };
 
     return (
-        <Modal
-            visible={visible}
-            animationType="slide"
-            transparent={true}
-            onRequestClose={handleCancel}
-        >
-            <View style={styles.modalOverlay}>
-                <View style={styles.modalContainer}>
+        <Portal>
+            <Modal
+                visible={visible}
+                onDismiss={handleCancel}
+                contentContainerStyle={styles.modal}
+            >
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    style={styles.container}
+                >
+                    {/* Header */}
                     <View style={styles.header}>
                         <Text style={styles.title}>
-                            {initialData ? '✏️ Modifier la séquence' : '✏️ Nouvelle Séquence'}
+                            {initialData ? 'Modifier la séquence' : 'Nouvelle séquence'}
                         </Text>
-                        <TouchableOpacity onPress={handleCancel}>
-                            <Text style={styles.closeButton}>✕</Text>
+                        <TouchableOpacity onPress={handleCancel} style={styles.closeButton}>
+                            <Text style={styles.closeText}>✕</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                        <View style={styles.form}>
-                            {/* Nom */}
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Nom de la séquence *</Text>
-                                <TextInput
-                                    value={name}
-                                    onChangeText={setName}
-                                    placeholder="Ex: La Révolution française"
-                                    mode="outlined"
-                                    style={styles.input}
-                                    error={!!error && !name.trim()}
-                                />
-                            </View>
+                    <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                        {/* Nom */}
+                        <View style={styles.field}>
+                            <Text style={styles.label}>Nom de la séquence *</Text>
+                            <TextInput
+                                value={name}
+                                onChangeText={(text) => {
+                                    setName(text);
+                                    if (error) setError('');
+                                }}
+                                placeholder="Ex: La Révolution française"
+                                style={[styles.input, error && !name.trim() && styles.inputError]}
+                                placeholderTextColor="#999"
+                            />
+                        </View>
 
-                            {/* Description */}
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Description (optionnel)</Text>
-                                <TextInput
-                                    value={description}
-                                    onChangeText={setDescription}
-                                    placeholder="De 1789 à 1799, étude des causes..."
-                                    mode="outlined"
-                                    multiline
-                                    numberOfLines={3}
-                                    style={styles.input}
-                                />
-                            </View>
+                        {/* Description */}
+                        <View style={styles.field}>
+                            <Text style={styles.label}>Description (optionnel)</Text>
+                            <TextInput
+                                value={description}
+                                onChangeText={setDescription}
+                                placeholder="De 1789 à 1799, étude des causes..."
+                                style={[styles.input, styles.inputMultiline]}
+                                placeholderTextColor="#999"
+                                multiline
+                                numberOfLines={3}
+                                textAlignVertical="top"
+                            />
+                        </View>
 
-                            {/* Thème */}
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Thème</Text>
-                                <TextInput
-                                    value={theme}
-                                    onChangeText={setTheme}
-                                    placeholder="Ex: Histoire moderne"
-                                    mode="outlined"
-                                    style={styles.input}
-                                />
-                            </View>
+                        {/* Thème */}
+                        <View style={styles.field}>
+                            <Text style={styles.label}>Thème</Text>
+                            <TextInput
+                                value={theme}
+                                onChangeText={setTheme}
+                                placeholder="Ex: Histoire moderne"
+                                style={styles.input}
+                                placeholderTextColor="#999"
+                            />
+                        </View>
 
-                            {/* Nombre de séances */}
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Nombre de séances prévues *</Text>
-                                <View style={styles.sessionCountContainer}>
-                                    <TextInput
-                                        value={sessionCount.toString()}
-                                        editable={false}
-                                        mode="outlined"
-                                        style={styles.sessionCountInput}
-                                    />
-                                    <View style={styles.stepperButtons}>
-                                        <TouchableOpacity
-                                            onPress={decrementSessionCount}
-                                            style={styles.stepperButton}
-                                        >
-                                            <Text style={styles.stepperButtonText}>−</Text>
-                                        </TouchableOpacity>
-                                        <TouchableOpacity
-                                            onPress={incrementSessionCount}
-                                            style={styles.stepperButton}
-                                        >
-                                            <Text style={styles.stepperButtonText}>+</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                        {/* Nombre de séances */}
+                        <View style={styles.field}>
+                            <Text style={styles.label}>Nombre de séances prévues *</Text>
+                            <View style={styles.sessionCountContainer}>
+                                <View style={styles.sessionCountDisplay}>
+                                    <Text style={styles.sessionCountText}>{sessionCount}</Text>
+                                </View>
+                                <View style={styles.stepperButtons}>
+                                    <TouchableOpacity
+                                        onPress={decrementSessionCount}
+                                        style={styles.stepperButton}
+                                    >
+                                        <MaterialCommunityIcons name="minus" size={20} color="#fff" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={incrementSessionCount}
+                                        style={styles.stepperButton}
+                                    >
+                                        <MaterialCommunityIcons name="plus" size={20} color="#fff" />
+                                    </TouchableOpacity>
                                 </View>
                             </View>
+                        </View>
 
-                            {/* Couleur */}
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Couleur</Text>
-                                <View style={styles.colorContainer}>
-                                    {SEQUENCE_COLORS.map((color) => (
-                                        <TouchableOpacity
-                                            key={color}
-                                            onPress={() => setSelectedColor(color)}
-                                            style={[
-                                                styles.colorOption,
-                                                { backgroundColor: color },
-                                                selectedColor === color && styles.colorSelected,
-                                            ]}
+                        {/* Couleur */}
+                        <View style={styles.field}>
+                            <Text style={styles.label}>Couleur</Text>
+                            <View style={styles.colorGrid}>
+                                {SEQUENCE_COLORS.map((color) => (
+                                    <TouchableOpacity
+                                        key={color}
+                                        style={[
+                                            styles.colorButton,
+                                            { backgroundColor: color },
+                                            selectedColor === color && styles.colorButtonActive,
+                                        ]}
+                                        onPress={() => setSelectedColor(color)}
+                                    >
+                                        {selectedColor === color && (
+                                            <View style={styles.colorCheck}>
+                                                <Text style={styles.checkMark}>✓</Text>
+                                            </View>
+                                        )}
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </View>
+
+                        {/* Objectifs */}
+                        <View style={styles.field}>
+                            <Text style={styles.label}>Objectifs pédagogiques (optionnel)</Text>
+                            <View style={styles.objectiveInputContainer}>
+                                <TextInput
+                                    value={newObjective}
+                                    onChangeText={setNewObjective}
+                                    placeholder="Ajouter un objectif..."
+                                    style={styles.objectiveInput}
+                                    placeholderTextColor="#999"
+                                    onSubmitEditing={addObjective}
+                                    returnKeyType="done"
+                                />
+                                <TouchableOpacity
+                                    onPress={addObjective}
+                                    disabled={!newObjective.trim()}
+                                    style={[
+                                        styles.addButton,
+                                        !newObjective.trim() && styles.addButtonDisabled
+                                    ]}
+                                >
+                                    <MaterialCommunityIcons
+                                        name="plus"
+                                        size={20}
+                                        color={newObjective.trim() ? '#2196F3' : '#ccc'}
+                                    />
+                                </TouchableOpacity>
+                            </View>
+                            
+                            {objectives.length > 0 && (
+                                <View style={styles.objectivesList}>
+                                    {objectives.map((objective, index) => (
+                                        <Chip
+                                            key={index}
+                                            onClose={() => removeObjective(objective)}
+                                            style={styles.objectiveChip}
+                                            textStyle={styles.objectiveChipText}
                                         >
-                                            {selectedColor === color && (
-                                                <Text style={styles.checkmark}>✓</Text>
-                                            )}
-                                        </TouchableOpacity>
+                                            {objective}
+                                        </Chip>
                                     ))}
                                 </View>
-                            </View>
-
-                            {/* Objectifs */}
-                            <View style={styles.field}>
-                                <Text style={styles.label}>Objectifs pédagogiques (optionnel)</Text>
-                                <View style={styles.objectiveInputContainer}>
-                                    <TextInput
-                                        value={currentObjective}
-                                        onChangeText={setCurrentObjective}
-                                        placeholder="Ajouter un objectif..."
-                                        mode="outlined"
-                                        style={styles.objectiveInput}
-                                        onSubmitEditing={addObjective}
-                                    />
-                                    <IconButton
-                                        icon="plus"
-                                        size={24}
-                                        onPress={addObjective}
-                                        disabled={!currentObjective.trim()}
-                                    />
-                                </View>
-                                {objectives.length > 0 && (
-                                    <View style={styles.objectivesList}>
-                                        {objectives.map((objective, index) => (
-                                            <View key={index} style={styles.objectiveItem}>
-                                                <Text style={styles.objectiveBullet}>•</Text>
-                                                <Text style={styles.objectiveText}>{objective}</Text>
-                                                <IconButton
-                                                    icon="close"
-                                                    size={16}
-                                                    onPress={() => removeObjective(index)}
-                                                />
-                                            </View>
-                                        ))}
-                                    </View>
-                                )}
-                            </View>
-
-                            {error && (
-                                <Text style={styles.errorText}>{error}</Text>
                             )}
                         </View>
+
+                        {error && (
+                            <Text style={styles.errorText}>{error}</Text>
+                        )}
                     </ScrollView>
 
+                    {/* Footer */}
                     <View style={styles.footer}>
                         <TouchableOpacity onPress={handleCancel} style={styles.cancelButton}>
                             <Text style={styles.cancelButtonText}>Annuler</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleSubmit} style={styles.submitButton}>
                             <Text style={styles.submitButtonText}>
-                                {initialData ? 'Modifier' : 'Créer la séquence'}
+                                {initialData ? 'Modifier' : 'Créer'}
                             </Text>
                         </TouchableOpacity>
                     </View>
-                </View>
-            </View>
-        </Modal>
+                </KeyboardAvoidingView>
+            </Modal>
+        </Portal>
     );
 }
 
 const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    modalContainer: {
+    modal: {
         backgroundColor: '#fff',
         borderRadius: 16,
-        width: '90%',
+        margin: 20,
         maxHeight: '90%',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
         shadowRadius: 8,
-        elevation: 8,
+        elevation: 5,
+    },
+    container: {
+        maxHeight: '100%',
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: SPACING.md,
+        padding: SPACING.lg,
         borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
+        borderBottomColor: '#f0f0f0',
     },
     title: {
         fontSize: 20,
         fontWeight: '600',
+        color: '#000',
     },
     closeButton: {
+        padding: 4,
+    },
+    closeText: {
         fontSize: 24,
         color: '#666',
-        padding: SPACING.sm,
+        fontWeight: '300',
     },
-    scrollContent: {
+    content: {
+        padding: SPACING.lg,
         maxHeight: 500,
-    },
-    form: {
-        padding: SPACING.md,
     },
     field: {
         marginBottom: SPACING.lg,
@@ -326,60 +338,86 @@ const styles = StyleSheet.create({
     label: {
         fontSize: 14,
         fontWeight: '600',
-        marginBottom: SPACING.xs,
         color: '#333',
+        marginBottom: SPACING.xs,
     },
     input: {
+        borderWidth: 1,
+        borderColor: '#e5e5e5',
+        borderRadius: 8,
+        padding: SPACING.md,
+        fontSize: 16,
         backgroundColor: '#fff',
+        color: '#000',
+    },
+    inputError: {
+        borderColor: '#f44336',
+    },
+    inputMultiline: {
+        minHeight: 80,
+        paddingTop: SPACING.md,
     },
     sessionCountContainer: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: SPACING.md,
     },
-    sessionCountInput: {
+    sessionCountDisplay: {
         flex: 1,
-        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#e5e5e5',
+        borderRadius: 8,
+        padding: SPACING.md,
+        alignItems: 'center',
+    },
+    sessionCountText: {
+        fontSize: 18,
+        fontWeight: '600',
+        color: '#000',
     },
     stepperButtons: {
         flexDirection: 'row',
         gap: SPACING.xs,
     },
     stepperButton: {
-        backgroundColor: '#2196F3',
+        backgroundColor: '#000',
         width: 40,
         height: 40,
-        borderRadius: 20,
+        borderRadius: 8,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    stepperButtonText: {
-        color: '#fff',
-        fontSize: 24,
-        fontWeight: '600',
-    },
-    colorContainer: {
+    colorGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: SPACING.sm,
     },
-    colorOption: {
+    colorButton: {
         width: 48,
         height: 48,
         borderRadius: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
         borderWidth: 2,
         borderColor: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-    colorSelected: {
+    colorButtonActive: {
         borderColor: '#000',
         borderWidth: 3,
     },
-    checkmark: {
+    colorCheck: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    checkMark: {
         color: '#fff',
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
+        textShadowColor: 'rgba(0, 0, 0, 0.3)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 2,
     },
     objectiveInputContainer: {
         flexDirection: 'row',
@@ -388,29 +426,36 @@ const styles = StyleSheet.create({
     },
     objectiveInput: {
         flex: 1,
+        borderWidth: 1,
+        borderColor: '#e5e5e5',
+        borderRadius: 8,
+        padding: SPACING.md,
+        fontSize: 14,
         backgroundColor: '#fff',
+        color: '#000',
     },
-    objectivesList: {
-        marginTop: SPACING.sm,
-        gap: SPACING.xs,
-    },
-    objectiveItem: {
-        flexDirection: 'row',
+    addButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 8,
+        justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#f5f5f5',
-        padding: SPACING.sm,
-        borderRadius: 8,
+    },
+    addButtonDisabled: {
+        opacity: 0.5,
+    },
+    objectivesList: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: SPACING.xs,
+        marginTop: SPACING.sm,
     },
-    objectiveBullet: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#666',
+    objectiveChip: {
+        backgroundColor: '#f0f0f0',
     },
-    objectiveText: {
-        flex: 1,
-        fontSize: 14,
-        color: '#333',
+    objectiveChipText: {
+        fontSize: 12,
     },
     errorText: {
         color: '#f44336',
@@ -420,9 +465,9 @@ const styles = StyleSheet.create({
     },
     footer: {
         flexDirection: 'row',
-        padding: SPACING.md,
+        padding: SPACING.lg,
         borderTopWidth: 1,
-        borderTopColor: '#e0e0e0',
+        borderTopColor: '#f0f0f0',
         gap: SPACING.md,
     },
     cancelButton: {
@@ -430,7 +475,7 @@ const styles = StyleSheet.create({
         padding: SPACING.md,
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#e5e5e5',
         alignItems: 'center',
     },
     cancelButtonText: {
@@ -442,7 +487,7 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: SPACING.md,
         borderRadius: 8,
-        backgroundColor: '#2196F3',
+        backgroundColor: '#000',
         alignItems: 'center',
     },
     submitButtonText: {

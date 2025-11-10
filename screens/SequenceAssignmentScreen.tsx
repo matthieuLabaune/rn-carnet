@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Text, Card, Checkbox, Button } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, StatusBar } from 'react-native';
+import { Text } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
@@ -152,28 +153,27 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
 
     return (
         <View style={styles.container}>
+            <StatusBar barStyle="light-content" />
+            
             {/* En-tête */}
-            <Card style={styles.headerCard}>
-                <Card.Content>
-                    <Text style={styles.headerTitle}>
-                        {sessionCount} séance(s) à assigner
-                    </Text>
-                    <Text style={styles.headerSubtitle}>
-                        {selectedSessionIds.length}/{sessionCount} séance(s) sélectionnée(s)
-                    </Text>
+            <View style={styles.headerCard}>
+                <Text style={styles.headerTitle}>
+                    {sessionCount} séance(s) à assigner
+                </Text>
+                <Text style={styles.headerSubtitle}>
+                    {selectedSessionIds.length}/{sessionCount} séance(s) sélectionnée(s)
+                </Text>
 
-                    {selectedSessionIds.length < sessionCount && (
-                        <Button
-                            mode="outlined"
-                            onPress={handleQuickSelect}
-                            style={styles.quickSelectButton}
-                            icon="flash"
-                        >
-                            Sélection rapide
-                        </Button>
-                    )}
-                </Card.Content>
-            </Card>
+                {selectedSessionIds.length < sessionCount && (
+                    <TouchableOpacity
+                        onPress={handleQuickSelect}
+                        style={styles.quickSelectButton}
+                    >
+                        <MaterialCommunityIcons name="flash" size={18} color="#007AFF" />
+                        <Text style={styles.quickSelectText}>Sélection rapide</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
 
             {/* Liste des séances */}
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -190,40 +190,41 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
                                     key={session.id}
                                     onPress={() => toggleSession(session.id)}
                                     activeOpacity={0.7}
+                                    style={[
+                                        styles.sessionCard,
+                                        isSelected && styles.sessionCardSelected,
+                                    ]}
                                 >
-                                    <Card
-                                        style={[
-                                            styles.sessionCard,
-                                            isSelected && styles.sessionCardSelected,
-                                        ]}
-                                    >
-                                        <Card.Content>
-                                            <View style={styles.sessionContent}>
-                                                <Checkbox
-                                                    status={isSelected ? 'checked' : 'unchecked'}
-                                                    onPress={() => toggleSession(session.id)}
-                                                />
-                                                <View style={styles.sessionInfo}>
-                                                    <Text style={styles.sessionDate}>
-                                                        {formatDate(session.date)} • {formatTime(session.date)}
-                                                    </Text>
-                                                    <Text style={styles.sessionSubject}>
-                                                        {session.subject}
-                                                    </Text>
-                                                    {session.description && (
-                                                        <Text style={styles.sessionDescription}>
-                                                            {session.description}
-                                                        </Text>
-                                                    )}
-                                                </View>
-                                                {order && (
-                                                    <View style={styles.orderBadge}>
-                                                        <Text style={styles.orderText}>← {order}</Text>
-                                                    </View>
-                                                )}
+                                    <View style={styles.sessionContent}>
+                                        <TouchableOpacity
+                                            onPress={() => toggleSession(session.id)}
+                                            style={styles.checkboxContainer}
+                                        >
+                                            <MaterialCommunityIcons
+                                                name={isSelected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                                                size={24}
+                                                color={isSelected ? '#007AFF' : '#999'}
+                                            />
+                                        </TouchableOpacity>
+                                        <View style={styles.sessionInfo}>
+                                            <Text style={styles.sessionDate}>
+                                                {formatDate(session.date)} • {formatTime(session.date)}
+                                            </Text>
+                                            <Text style={styles.sessionSubject}>
+                                                {session.subject}
+                                            </Text>
+                                            {session.description && (
+                                                <Text style={styles.sessionDescription}>
+                                                    {session.description}
+                                                </Text>
+                                            )}
+                                        </View>
+                                        {order && (
+                                            <View style={[styles.orderBadge, { backgroundColor: classColor }]}>
+                                                <Text style={styles.orderText}>{order}</Text>
                                             </View>
-                                        </Card.Content>
-                                    </Card>
+                                        )}
+                                    </View>
                                 </TouchableOpacity>
                             );
                         })}
@@ -235,21 +236,23 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
 
             {/* Footer avec boutons */}
             <View style={styles.footer}>
-                <Button
-                    mode="outlined"
+                <TouchableOpacity
                     onPress={() => navigation.goBack()}
                     style={styles.cancelButton}
                 >
-                    Annuler
-                </Button>
-                <Button
-                    mode="contained"
+                    <Text style={styles.cancelButtonText}>Annuler</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
                     onPress={handleValidate}
-                    style={[styles.validateButton, { backgroundColor: classColor }]}
+                    style={[
+                        styles.validateButton,
+                        { backgroundColor: classColor },
+                        selectedSessionIds.length === 0 && styles.validateButtonDisabled,
+                    ]}
                     disabled={selectedSessionIds.length === 0}
                 >
-                    Valider l'assignation
-                </Button>
+                    <Text style={styles.validateButtonText}>Valider l'assignation</Text>
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -262,11 +265,19 @@ const styles = StyleSheet.create({
     },
     headerCard: {
         margin: SPACING.md,
-        elevation: 2,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: SPACING.md,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: '600',
+        fontWeight: '700',
+        color: '#000',
         marginBottom: SPACING.xs,
     },
     headerSubtitle: {
@@ -275,7 +286,21 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.sm,
     },
     quickSelectButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
         marginTop: SPACING.sm,
+        padding: SPACING.sm,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#007AFF',
+        backgroundColor: '#fff',
+    },
+    quickSelectText: {
+        color: '#007AFF',
+        fontSize: 14,
+        fontWeight: '600',
+        marginLeft: SPACING.xs,
     },
     scrollView: {
         flex: 1,
@@ -286,23 +311,32 @@ const styles = StyleSheet.create({
     },
     monthTitle: {
         fontSize: 16,
-        fontWeight: '600',
-        color: '#333',
+        fontWeight: '700',
+        color: '#000',
         marginBottom: SPACING.sm,
     },
     sessionCard: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: SPACING.md,
         marginBottom: SPACING.sm,
-        elevation: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
     },
     sessionCardSelected: {
-        borderColor: '#2196F3',
+        borderColor: '#007AFF',
         borderWidth: 2,
-        elevation: 3,
+        elevation: 4,
     },
     sessionContent: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: SPACING.sm,
+    },
+    checkboxContainer: {
+        marginRight: SPACING.sm,
     },
     sessionInfo: {
         flex: 1,
@@ -323,17 +357,17 @@ const styles = StyleSheet.create({
         color: '#999',
     },
     orderBadge: {
-        backgroundColor: '#2196F3',
-        paddingHorizontal: SPACING.sm,
-        paddingVertical: 4,
-        borderRadius: 12,
-        minWidth: 36,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 16,
+        minWidth: 32,
         alignItems: 'center',
+        justifyContent: 'center',
     },
     orderText: {
         color: '#fff',
-        fontSize: 12,
-        fontWeight: '600',
+        fontSize: 14,
+        fontWeight: '700',
     },
     bottomPadding: {
         height: SPACING.xl,
@@ -348,8 +382,32 @@ const styles = StyleSheet.create({
     },
     cancelButton: {
         flex: 1,
+        padding: SPACING.md,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#999',
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    cancelButtonText: {
+        color: '#666',
+        fontSize: 16,
+        fontWeight: '600',
     },
     validateButton: {
         flex: 1,
+        padding: SPACING.md,
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    validateButtonDisabled: {
+        opacity: 0.5,
+    },
+    validateButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });
