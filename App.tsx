@@ -10,6 +10,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { initDatabase } from './services/database';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { RootStackParamList, MainTabsParamList } from './navigation/types';
+import SplashScreen from './components/SplashScreen';
 import HomeScreen from './screens/HomeScreen';
 import ClassListScreen from './screens/ClassListScreen';
 import ClassDetailScreen from './screens/ClassDetailScreen';
@@ -105,6 +106,7 @@ function MainTabs() {
 
 export default function App() {
     const [loading, setLoading] = useState(true);
+    const [showSplash, setShowSplash] = useState(true);
 
     useEffect(() => {
         initDatabase()
@@ -112,6 +114,18 @@ export default function App() {
             .catch(console.error);
     }, []);
 
+    // Afficher le splash screen
+    if (showSplash) {
+        return (
+            <PaperProvider>
+                <SafeAreaProvider>
+                    <SplashScreen onFinish={() => setShowSplash(false)} />
+                </SafeAreaProvider>
+            </PaperProvider>
+        );
+    }
+
+    // Afficher le loading après le splash si la DB n'est pas prête
     if (loading) {
         return (
             <PaperProvider>
