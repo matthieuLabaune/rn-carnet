@@ -39,6 +39,13 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
         loadData();
     }, [classId]);
 
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            loadData();
+        });
+        return unsubscribe;
+    }, [navigation]);
+
     const loadData = async () => {
         try {
             setLoading(true);
