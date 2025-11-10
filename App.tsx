@@ -26,6 +26,7 @@ import SessionGenerationScreen from './screens/SessionGenerationScreen';
 import ScheduleWizardScreen from './screens/ScheduleWizardScreen';
 import SequencePlanningScreen from './screens/SequencePlanningScreen';
 import SequenceAssignmentScreen from './screens/SequenceAssignmentScreen';
+import SequenceTimelineScreen from './screens/SequenceTimelineScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -197,6 +198,11 @@ export default function App() {
                             <Stack.Screen
                                 name="SequenceAssignment"
                                 component={SequenceAssignmentScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="SequenceTimeline"
+                                component={SequenceTimelineScreen}
                                 options={{ headerShown: false }}
                             />
                         </Stack.Navigator>
