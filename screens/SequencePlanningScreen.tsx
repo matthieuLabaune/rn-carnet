@@ -680,7 +680,12 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
                     </TouchableOpacity>
                 ) : (
                     sequences.map((sequence, index) => (
-                        <View key={sequence.id} style={styles.sequenceCard}>
+                        <TouchableOpacity
+                            key={sequence.id}
+                            style={styles.sequenceCard}
+                            onPress={() => navigation.navigate('SequenceDetail', { sequenceId: sequence.id })}
+                            activeOpacity={0.7}
+                        >
                             <View style={styles.sequenceHeader}>
                                 <View style={styles.sequenceHeaderLeft}>
                                     <View
@@ -770,14 +775,17 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
 
                             <TouchableOpacity
                                 style={[styles.assignButton, { backgroundColor: sequence.color }]}
-                                onPress={() => handleAssignSequence(sequence)}
+                                onPress={(e) => {
+                                    e.stopPropagation();
+                                    handleAssignSequence(sequence);
+                                }}
                             >
                                 <MaterialCommunityIcons name="calendar-check" size={18} color="#fff" />
                                 <Text style={styles.assignButtonText}>
                                     Assigner aux séances
                                 </Text>
                             </TouchableOpacity>
-                        </View>
+                        </TouchableOpacity>
                     ))
                 )}
             </ScrollView>

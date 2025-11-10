@@ -140,18 +140,10 @@ export default function SequencesIndexScreen({ navigation, route }: Props) {
     };
 
     const handleSequencePress = (sequence: SequenceWithClass) => {
-        // Navigation vers le détail de la séquence (à créer)
-        // Pour l'instant, navigation vers l'assignation
-        if (sequence.class) {
-            navigation.navigate('SequenceAssignment', {
-                sequenceId: sequence.id,
-                sequenceName: sequence.name,
-                sessionCount: sequence.sessionCount,
-                classId: sequence.classId,
-                className: sequence.class.name,
-                classColor: sequence.class.color,
-            });
-        }
+        // Navigation vers le détail de la séquence
+        navigation.navigate('SequenceDetail', {
+            sequenceId: sequence.id,
+        });
     };
 
     const handleViewModeChange = (mode: 'list' | 'calendar') => {

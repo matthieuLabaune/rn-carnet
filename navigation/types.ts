@@ -15,6 +15,7 @@ export type RootStackParamList = {
     ScheduleWizard: { classId: string; className: string; classColor: string };
     SequencesIndex: undefined;
     SequencePlanning: { classId: string; className: string; classColor: string };
+    SequenceDetail: { sequenceId: string };
     SequenceAssignment: {
         sequenceId: string;
         sequenceName: string;

@@ -25,6 +25,7 @@ import ScheduleManagementScreen from './screens/ScheduleManagementScreen';
 import SessionGenerationScreen from './screens/SessionGenerationScreen';
 import ScheduleWizardScreen from './screens/ScheduleWizardScreen';
 import SequencePlanningScreen from './screens/SequencePlanningScreen';
+import SequenceDetailScreen from './screens/SequenceDetailScreen';
 import SequenceAssignmentScreen from './screens/SequenceAssignmentScreen';
 import SequenceTimelineScreen from './screens/SequenceTimelineScreen';
 import SequencesIndexScreen from './screens/SequencesIndexScreen';
@@ -210,6 +211,11 @@ export default function App() {
                             <Stack.Screen
                                 name="SequencePlanning"
                                 component={SequencePlanningScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="SequenceDetail"
+                                component={SequenceDetailScreen}
                                 options={{ headerShown: false }}
                             />
                             <Stack.Screen
