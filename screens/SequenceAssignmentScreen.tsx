@@ -29,11 +29,6 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        navigation.setOptions({
-            title: `🎯 Assigner: ${sequenceName}`,
-            headerStyle: { backgroundColor: classColor },
-            headerTintColor: '#fff',
-        });
         loadData();
     }, [sequenceId, classId]);
 
@@ -154,32 +149,41 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
-            
-            {/* En-tête */}
-            <View style={styles.headerCard}>
-                <Text style={styles.headerTitle}>
-                    {sessionCount} séance(s) à assigner
-                </Text>
-                <Text style={styles.headerSubtitle}>
-                    {selectedSessionIds.length}/{sessionCount} séance(s) sélectionnée(s)
-                </Text>
 
-                {selectedSessionIds.length < sessionCount && (
+            {/* Header */}
+            <View style={[styles.header, { backgroundColor: classColor }]}>
+                <TouchableOpacity
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                >
+                    <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+                <View style={styles.headerTextContainer}>
+                    <Text style={styles.headerTitle}>{sequenceName}</Text>
+                    <Text style={styles.headerSubtitle}>
+                        {selectedSessionIds.length}/{sessionCount} séance(s) sélectionnée(s)
+                    </Text>
+                </View>
+            </View>
+            
+            {/* Quick Select Button */}
+            {selectedSessionIds.length < sessionCount && (
+                <View style={styles.quickSelectContainer}>
                     <TouchableOpacity
                         onPress={handleQuickSelect}
                         style={styles.quickSelectButton}
                     >
                         <MaterialCommunityIcons name="flash" size={18} color="#007AFF" />
-                        <Text style={styles.quickSelectText}>Sélection rapide</Text>
+                        <Text style={styles.quickSelectText}>Sélection rapide des {sessionCount} prochaines séances</Text>
                     </TouchableOpacity>
-                )}
-            </View>
+                </View>
+            )}
 
             {/* Liste des séances */}
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 {groupSessionsByMonth().map(group => (
                     <View key={group.monthKey} style={styles.monthGroup}>
-                        <Text style={styles.monthTitle}>📅 {group.monthLabel}</Text>
+                        <Text style={styles.monthTitle}>{group.monthLabel}</Text>
 
                         {group.sessions.map(session => {
                             const isSelected = selectedSessionIds.includes(session.id);
@@ -263,33 +267,44 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
-    headerCard: {
-        margin: SPACING.md,
-        backgroundColor: '#fff',
-        borderRadius: 12,
-        padding: SPACING.md,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingTop: 60,
+        paddingBottom: 16,
+        paddingHorizontal: 16,
+    },
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginRight: 12,
+    },
+    headerTextContainer: {
+        flex: 1,
     },
     headerTitle: {
-        fontSize: 18,
+        fontSize: 20,
         fontWeight: '700',
-        color: '#000',
-        marginBottom: SPACING.xs,
+        color: '#FFFFFF',
+        marginBottom: 2,
     },
     headerSubtitle: {
         fontSize: 14,
-        color: '#666',
-        marginBottom: SPACING.sm,
+        color: 'rgba(255, 255, 255, 0.9)',
+    },
+    quickSelectContainer: {
+        paddingHorizontal: SPACING.md,
+        paddingTop: SPACING.sm,
+        paddingBottom: SPACING.xs,
     },
     quickSelectButton: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: SPACING.sm,
         padding: SPACING.sm,
         borderRadius: 8,
         borderWidth: 1,
@@ -310,10 +325,11 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.lg,
     },
     monthTitle: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '700',
-        color: '#000',
+        color: '#999',
         marginBottom: SPACING.sm,
+        textTransform: 'lowercase',
     },
     sessionCard: {
         backgroundColor: '#fff',
