@@ -188,7 +188,8 @@ export default function HomeScreen({ navigation }: Props) {
                         {new Date().toLocaleDateString('fr-FR', {
                             weekday: 'long',
                             day: 'numeric',
-                            month: 'long'
+                            month: 'long',
+                            year: 'numeric'
                         })}
                     </Text>
                 </View>
