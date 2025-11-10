@@ -13,6 +13,7 @@ export type RootStackParamList = {
     ScheduleManagement: { classId: string; className: string; classColor: string };
     SessionGeneration: { classId: string; className: string; classColor: string };
     ScheduleWizard: { classId: string; className: string; classColor: string };
+    SequencesIndex: undefined;
     SequencePlanning: { classId: string; className: string; classColor: string };
     SequenceAssignment: {
         sequenceId: string;
@@ -29,6 +30,7 @@ export type MainTabsParamList = {
     Home: undefined;
     Students: undefined;
     Classes: undefined;
+    Sequences: undefined;
     Sessions: undefined;
     Settings: undefined;
 };

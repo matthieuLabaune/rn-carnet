@@ -27,6 +27,8 @@ import ScheduleWizardScreen from './screens/ScheduleWizardScreen';
 import SequencePlanningScreen from './screens/SequencePlanningScreen';
 import SequenceAssignmentScreen from './screens/SequenceAssignmentScreen';
 import SequenceTimelineScreen from './screens/SequenceTimelineScreen';
+import SequencesIndexScreen from './screens/SequencesIndexScreen';
+import SequencesTabScreen from './screens/SequencesTabScreen';
 import SettingsScreen from './screens/SettingsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -72,6 +74,16 @@ function MainTabs() {
                     tabBarLabel: 'Élèves',
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="account-group" size={size} color={color} />
+                    ),
+                }}
+            />
+            <Tab.Screen
+                name="Sequences"
+                component={SequencesTabScreen}
+                options={{
+                    tabBarLabel: 'Séquences',
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="book-open-page-variant" size={size} color={color} />
                     ),
                 }}
             />
@@ -188,6 +200,11 @@ export default function App() {
                             <Stack.Screen
                                 name="ScheduleWizard"
                                 component={ScheduleWizardScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="SequencesIndex"
+                                component={SequencesIndexScreen}
                                 options={{ headerShown: false }}
                             />
                             <Stack.Screen
