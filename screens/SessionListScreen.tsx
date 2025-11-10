@@ -5,8 +5,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../navigation/types';
-import { sessionService, classService } from '../services';
-import { Session, Class } from '../types';
+import { sessionService, classService, sequenceService } from '../services';
+import { Session, Class, Sequence } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 
 type SessionListScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'SessionList'>;
@@ -22,6 +22,7 @@ export default function SessionListScreen({ navigation, route }: Props) {
     const { classId } = route.params;
     const [sessions, setSessions] = useState<Session[]>([]);
     const [classData, setClassData] = useState<Class | null>(null);
+    const [sessionSequences, setSessionSequences] = useState<Map<string, Sequence>>(new Map());
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -47,6 +48,18 @@ export default function SessionListScreen({ navigation, route }: Props) {
             // Trier par date décroissante
             sessionsData.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             setSessions(sessionsData);
+
+            // Charger les séquences pour chaque séance
+            const sequenceMap = new Map<string, Sequence>();
+            await Promise.all(
+                sessionsData.map(async (session) => {
+                    const sequence = await sequenceService.getSequenceBySession(session.id);
+                    if (sequence) {
+                        sequenceMap.set(session.id, sequence);
+                    }
+                })
+            );
+            setSessionSequences(sequenceMap);
         } catch (error) {
             console.error('Error loading sessions:', error);
         } finally {
@@ -115,6 +128,12 @@ export default function SessionListScreen({ navigation, route }: Props) {
                         {sessions.length} séance{sessions.length !== 1 ? 's' : ''}
                     </Text>
                 </View>
+                <TouchableOpacity
+                    style={styles.timelineButton}
+                    onPress={() => navigation.navigate('SequenceTimeline', { classId, className: classData.name, classColor: classData.color })}
+                >
+                    <MaterialCommunityIcons name="chart-timeline-variant" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -128,49 +147,60 @@ export default function SessionListScreen({ navigation, route }: Props) {
                     </View>
                 ) : (
                     <View style={styles.list}>
-                        {sessions.map((session) => (
-                            <TouchableOpacity
-                                key={session.id}
-                                style={[styles.sessionCard, { backgroundColor: theme.surface, borderLeftColor: classData?.color }]}
-                                onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
-                            >
-                                <View style={styles.sessionHeader}>
-                                    <View style={styles.sessionTitleRow}>
-                                        <Text style={[styles.sessionSubject, { color: theme.text }]}>{session.subject}</Text>
-                                        <View style={[styles.statusBadge, getStatusStyle(session.status)]}>
-                                            <Text style={[styles.statusText, { color: getStatusStyle(session.status).color }]}>
-                                                {getStatusLabel(session.status)}
+                        {sessions.map((session) => {
+                            const sequence = sessionSequences.get(session.id);
+                            return (
+                                <TouchableOpacity
+                                    key={session.id}
+                                    style={[styles.sessionCard, { backgroundColor: theme.surface, borderLeftColor: sequence?.color || classData?.color }]}
+                                    onPress={() => navigation.navigate('SessionDetail', { sessionId: session.id })}
+                                >
+                                    <View style={styles.sessionHeader}>
+                                        <View style={styles.sessionTitleRow}>
+                                            <Text style={[styles.sessionSubject, { color: theme.text }]}>{session.subject}</Text>
+                                            <View style={[styles.statusBadge, getStatusStyle(session.status)]}>
+                                                <Text style={[styles.statusText, { color: getStatusStyle(session.status).color }]}>
+                                                    {getStatusLabel(session.status)}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                        {session.description && (
+                                            <Text style={[styles.sessionDescription, { color: theme.textSecondary }]} numberOfLines={2}>
+                                                {session.description}
+                                            </Text>
+                                        )}
+                                        {sequence && (
+                                            <View style={styles.sequenceInfo}>
+                                                <MaterialCommunityIcons name="book-open-page-variant" size={14} color={sequence.color} />
+                                                <Text style={[styles.sequenceText, { color: sequence.color }]}>
+                                                    {sequence.name}
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
+
+                                    <View style={styles.sessionFooter}>
+                                        <View style={styles.dateInfo}>
+                                            <MaterialCommunityIcons name="calendar" size={16} color={theme.textSecondary} />
+                                            <Text style={[styles.dateText, { color: theme.textSecondary }]}>
+                                                {new Date(session.date).toLocaleDateString('fr-FR', {
+                                                    weekday: 'long',
+                                                    day: 'numeric',
+                                                    month: 'long',
+                                                    year: 'numeric',
+                                                })}
+                                            </Text>
+                                        </View>
+                                        <View style={styles.durationInfo}>
+                                            <MaterialCommunityIcons name="clock-outline" size={16} color={theme.textSecondary} />
+                                            <Text style={[styles.durationText, { color: theme.textSecondary }]}>
+                                                {session.duration} min
                                             </Text>
                                         </View>
                                     </View>
-                                    {session.description && (
-                                        <Text style={[styles.sessionDescription, { color: theme.textSecondary }]} numberOfLines={2}>
-                                            {session.description}
-                                        </Text>
-                                    )}
-                                </View>
-
-                                <View style={styles.sessionFooter}>
-                                    <View style={styles.dateInfo}>
-                                        <MaterialCommunityIcons name="calendar" size={16} color={theme.textSecondary} />
-                                        <Text style={[styles.dateText, { color: theme.textSecondary }]}>
-                                            {new Date(session.date).toLocaleDateString('fr-FR', {
-                                                weekday: 'long',
-                                                day: 'numeric',
-                                                month: 'long',
-                                                year: 'numeric',
-                                            })}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.durationInfo}>
-                                        <MaterialCommunityIcons name="clock-outline" size={16} color={theme.textSecondary} />
-                                        <Text style={[styles.durationText, { color: theme.textSecondary }]}>
-                                            {session.duration} min
-                                        </Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
+                                </TouchableOpacity>
+                            );
+                        })}
                     </View>
                 )}
             </ScrollView>
@@ -209,6 +239,15 @@ const styles = StyleSheet.create({
     },
     headerContent: {
         flex: 1,
+    },
+    timelineButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 12,
     },
     headerTitle: {
         fontSize: 24,
@@ -283,6 +322,20 @@ const styles = StyleSheet.create({
     sessionDescription: {
         fontSize: 14,
         lineHeight: 20,
+        marginBottom: 8,
+    },
+    sequenceInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginTop: 4,
+        paddingTop: 8,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0, 0, 0, 0.05)',
+    },
+    sequenceText: {
+        fontSize: 13,
+        fontWeight: '600',
     },
     sessionFooter: {
         flexDirection: 'row',

@@ -274,7 +274,7 @@ export default function SequencePlanningScreen({ navigation, route }: Props) {
                 </View>
 
                 {sequences.length === 0 ? (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.emptyCard}
                         onPress={openCreateDialog}
                         activeOpacity={0.7}

@@ -317,7 +317,7 @@ describe('sequenceService', () => {
 
         it('should update status based on assignment progress', async () => {
             global.mockDb.runAsync.mockResolvedValue({ changes: 1 });
-            
+
             // First call: get sequence
             global.mockDb.getFirstAsync.mockResolvedValueOnce({
                 ...mockSequenceRow,
@@ -457,7 +457,7 @@ describe('sequenceService', () => {
             jest.clearAllMocks();
             global.mockDb.getAllAsync.mockReset();
             global.mockDb.getFirstAsync.mockReset();
-            
+
             // Setup fresh mocks for this test
             global.mockDb.getAllAsync.mockResolvedValue([
                 mockSequenceRow,
@@ -481,7 +481,7 @@ describe('sequenceService', () => {
             jest.clearAllMocks();
             global.mockDb.getAllAsync.mockReset();
             global.mockDb.getFirstAsync.mockReset();
-            
+
             // Setup fresh mocks for this test
             global.mockDb.getAllAsync.mockResolvedValue([]);
             global.mockDb.getFirstAsync

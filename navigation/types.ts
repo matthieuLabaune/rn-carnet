@@ -22,6 +22,7 @@ export type RootStackParamList = {
         className: string;
         classColor: string;
     };
+    SequenceTimeline: { classId: string; className: string; classColor: string };
 };
 
 export type MainTabsParamList = {

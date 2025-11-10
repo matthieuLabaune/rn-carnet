@@ -253,7 +253,7 @@ export default function SequenceFormDialog({
                                     />
                                 </TouchableOpacity>
                             </View>
-                            
+
                             {objectives.length > 0 && (
                                 <View style={styles.objectivesList}>
                                     {objectives.map((objective, index) => (

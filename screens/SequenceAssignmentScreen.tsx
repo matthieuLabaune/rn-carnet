@@ -165,7 +165,7 @@ export default function SequenceAssignmentScreen({ navigation, route }: Props) {
                     </Text>
                 </View>
             </View>
-            
+
             {/* Quick Select Button */}
             {selectedSessionIds.length < sessionCount && (
                 <View style={styles.quickSelectContainer}>

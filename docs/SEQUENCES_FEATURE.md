@@ -364,7 +364,7 @@ ClassDetail → Wizard → Générer 120 séances
 **Étape 2 : Création du programme**
 ```
 ClassDetail → Carte "Séquences" → SequencePlanningScreen
-  
+
 Créer 8 séquences :
 1. Révolution française (5 séances)
 2. Empire napoléonien (4 séances)

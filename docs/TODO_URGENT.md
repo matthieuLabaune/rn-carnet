@@ -7,7 +7,7 @@
 ## 🎯 Fonctionnalités Prioritaires
 
 ### 1. ⏱️ Timer Pédagogique (PRIORITÉ #1)
-**Temps estimé** : 2-3h  
+**Temps estimé** : 2-3h
 **Valeur** : ⭐⭐⭐⭐⭐ (Fonctionnalité signature de l'app)
 
 #### Ce qui existe déjà :
@@ -67,7 +67,7 @@ services/timerPresetService.ts (optionnel, peut stocker en AsyncStorage)
 ---
 
 ### 2. 📋 Système de Présences (PRIORITÉ #2)
-**Temps estimé** : 1-2h  
+**Temps estimé** : 1-2h
 **Valeur** : ⭐⭐⭐⭐ (Presque terminé, service déjà fait !)
 
 #### Ce qui existe déjà :
@@ -141,7 +141,7 @@ SessionDetail: { sessionId: string };
 ---
 
 ### 3. 📝 Évaluations Basiques (PRIORITÉ #3)
-**Temps estimé** : 2-3h  
+**Temps estimé** : 2-3h
 **Valeur** : ⭐⭐⭐ (Optionnel pour v1)
 
 #### À créer :

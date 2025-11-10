@@ -222,16 +222,16 @@ export const sequenceService = {
         // Mettre à jour le statut de la séquence
         const assignedCount = sessionIds.length;
         const sequence = await sequenceService.getById(sequenceId);
-        
+
         if (sequence) {
             let newStatus: 'planned' | 'in-progress' | 'completed' = 'planned';
-            
+
             if (assignedCount > 0 && assignedCount < sequence.sessionCount) {
                 newStatus = 'in-progress';
             } else if (assignedCount >= sequence.sessionCount) {
                 newStatus = 'completed';
             }
-            
+
             await sequenceService.updateStatus(sequenceId, newStatus);
         }
     },
@@ -242,7 +242,7 @@ export const sequenceService = {
     getSessionsBySequence: async (sequenceId: string): Promise<(Session & { orderInSequence: number })[]> => {
         const db = getDatabase();
         const sessions = await db.getAllAsync<Session & { orderInSequence: number }>(
-            `SELECT s.*, ss.order_in_sequence as orderInSequence 
+            `SELECT s.*, ss.order_in_sequence as orderInSequence
              FROM sessions s
              INNER JOIN session_sequences ss ON s.id = ss.session_id
              WHERE ss.sequence_id = ?
@@ -279,7 +279,7 @@ export const sequenceService = {
      */
     unassignSession: async (sessionId: string): Promise<void> => {
         const db = getDatabase();
-        
+
         // Récupérer la séquence avant de supprimer
         const sequenceData = await db.getFirstAsync<{ sequence_id: string }>(
             'SELECT sequence_id FROM session_sequences WHERE session_id = ?',
@@ -296,16 +296,16 @@ export const sequenceService = {
         if (sequenceData) {
             const remainingSessions = await sequenceService.getSessionsBySequence(sequenceData.sequence_id);
             const sequence = await sequenceService.getById(sequenceData.sequence_id);
-            
+
             if (sequence) {
                 let newStatus: 'planned' | 'in-progress' | 'completed' = 'planned';
-                
+
                 if (remainingSessions.length > 0 && remainingSessions.length < sequence.sessionCount) {
                     newStatus = 'in-progress';
                 } else if (remainingSessions.length >= sequence.sessionCount) {
                     newStatus = 'completed';
                 }
-                
+
                 await sequenceService.updateStatus(sequenceData.sequence_id, newStatus);
             }
         }
@@ -333,7 +333,7 @@ export const sequenceService = {
         const totalSessions = totalSessionsResult?.count || 0;
 
         const assignedSessionsResult = await db.getFirstAsync<{ count: number }>(
-            `SELECT COUNT(DISTINCT ss.session_id) as count 
+            `SELECT COUNT(DISTINCT ss.session_id) as count
              FROM session_sequences ss
              INNER JOIN sequences seq ON ss.sequence_id = seq.id
              WHERE seq.class_id = ?`,
@@ -342,7 +342,7 @@ export const sequenceService = {
         const assignedSessions = assignedSessionsResult?.count || 0;
 
         const unassignedSessions = totalSessions - assignedSessions;
-        const completionPercentage = totalSessions > 0 
+        const completionPercentage = totalSessions > 0
             ? Math.round((assignedSessions / totalSessions) * 100)
             : 0;
 
