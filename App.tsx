@@ -11,6 +11,7 @@ import { initDatabase } from './services/database';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { RootStackParamList, MainTabsParamList } from './navigation/types';
 import HomeScreen from './screens/HomeScreen';
+import ClassListScreen from './screens/ClassListScreen';
 import ClassDetailScreen from './screens/ClassDetailScreen';
 import StudentListScreen from './screens/StudentListScreen';
 import StudentDetailScreen from './screens/StudentDetailScreen';
@@ -59,22 +60,22 @@ function MainTabs() {
             }}
         >
             <Tab.Screen
-                name="Classes"
+                name="Home"
                 component={HomeScreen}
                 options={{
-                    tabBarLabel: 'Classes',
+                    tabBarLabel: 'Accueil',
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="google-classroom" size={size} color={color} />
+                        <MaterialCommunityIcons name="view-dashboard" size={size} color={color} />
                     ),
                 }}
             />
             <Tab.Screen
-                name="Students"
-                component={AllStudentsScreen}
+                name="Classes"
+                component={ClassListScreen}
                 options={{
-                    tabBarLabel: 'Élèves',
+                    tabBarLabel: 'Classes',
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="account-group" size={size} color={color} />
+                        <MaterialCommunityIcons name="google-classroom" size={size} color={color} />
                     ),
                 }}
             />
@@ -95,16 +96,6 @@ function MainTabs() {
                     tabBarLabel: 'Séances',
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="calendar-text" size={size} color={color} />
-                    ),
-                }}
-            />
-            <Tab.Screen
-                name="Settings"
-                component={SettingsScreen}
-                options={{
-                    tabBarLabel: 'Réglages',
-                    tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="cog" size={size} color={color} />
                     ),
                 }}
             />
