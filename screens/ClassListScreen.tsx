@@ -88,7 +88,7 @@ export default function ClassListScreen({ navigation }: Props) {
             <StatusBar barStyle={theme.statusBarStyle} />
 
             <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
-                <MaterialCommunityIcons name="google-classroom" size={28} color={theme.text} />
+                <MaterialCommunityIcons name="account-group" size={28} color={theme.text} />
                 <View style={styles.headerContent}>
                     <Text style={[styles.headerTitle, { color: theme.text }]}>Toutes les classes</Text>
                     <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
@@ -99,7 +99,7 @@ export default function ClassListScreen({ navigation }: Props) {
 
             {classes.length === 0 ? (
                 <View style={styles.emptyContainer}>
-                    <MaterialCommunityIcons name="google-classroom" size={80} color={theme.border} />
+                    <MaterialCommunityIcons name="account-group" size={80} color={theme.border} />
                     <Text style={[styles.emptyTitle, { color: theme.text }]}>Aucune classe</Text>
                     <Text style={[styles.emptySubtitle, { color: theme.textSecondary }]}>
                         Commencez par créer votre première classe
@@ -226,7 +226,8 @@ const styles = StyleSheet.create({
         paddingBottom: 100,
     },
     card: {
-        borderRadius: 16,
+        borderTopRightRadius: 16,
+        borderBottomRightRadius: 16,
         marginBottom: 16,
         borderWidth: 1,
         overflow: 'hidden',
