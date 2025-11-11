@@ -216,6 +216,27 @@ export default function SettingsScreen() {
                     </View>
                 </View>
 
+                {/* Établissements */}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Établissements</Text>
+
+                    <TouchableOpacity
+                        style={[styles.settingRow, { backgroundColor: theme.cardBackground }]}
+                        onPress={() => navigation.navigate('EstablishmentManagement')}
+                    >
+                        <View style={styles.settingInfo}>
+                            <MaterialCommunityIcons name="domain" size={24} color={theme.textSecondary} style={styles.settingIcon} />
+                            <View>
+                                <Text style={[styles.settingLabel, { color: theme.text }]}>Gérer mes établissements</Text>
+                                <Text style={[styles.settingDescription, { color: theme.textSecondary }]}>
+                                    Ajouter et configurer vos établissements
+                                </Text>
+                            </View>
+                        </View>
+                        <MaterialCommunityIcons name="chevron-right" size={24} color={theme.textTertiary} />
+                    </TouchableOpacity>
+                </View>
+
                 {/* Année scolaire */}
                 <View style={styles.section}>
                     <Text style={[styles.sectionTitle, { color: theme.textTertiary }]}>Année scolaire</Text>

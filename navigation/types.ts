@@ -26,6 +26,7 @@ export type RootStackParamList = {
     };
     SequenceTimeline: { classId: string; className: string; classColor: string };
     Settings: undefined;
+    EstablishmentManagement: undefined;
 };
 
 export type MainTabsParamList = {

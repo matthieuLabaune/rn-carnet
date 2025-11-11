@@ -33,6 +33,7 @@ import SequenceTimelineScreen from './screens/SequenceTimelineScreen';
 import SequencesIndexScreen from './screens/SequencesIndexScreen';
 import SequencesTabScreen from './screens/SequencesTabScreen';
 import SettingsScreen from './screens/SettingsScreen';
+import EstablishmentManagementScreen from './screens/EstablishmentManagementScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<MainTabsParamList>();
@@ -236,6 +237,11 @@ export default function App() {
                             <Stack.Screen
                                 name="Settings"
                                 component={SettingsScreen}
+                                options={{ headerShown: false }}
+                            />
+                            <Stack.Screen
+                                name="EstablishmentManagement"
+                                component={EstablishmentManagementScreen}
                                 options={{ headerShown: false }}
                             />
                         </Stack.Navigator>
