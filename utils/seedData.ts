@@ -1,4 +1,4 @@
-import { classService, studentService, sessionService, attendanceService, competenceService, evaluationService, evaluationResultService } from '../services';
+import { classService, studentService, sessionService, attendanceService, competenceService, evaluationService, evaluationResultService, sequenceService } from '../services';
 import { Handicap, Laterality } from '../types/student';
 import { SessionFormData, SessionStatus } from '../types/session';
 import { Niveau } from '../types/evaluationResult';
@@ -17,27 +17,20 @@ const LAST_NAMES = [
     'Roux', 'Vincent', 'Fournier', 'Morel', 'Girard', 'André', 'Mercier', 'Dupont',
 ];
 
-// Configurations pour professeur des écoles (Primaire)
+// Configurations pour professeur des écoles (Primaire) - RÉDUIT À 4 CLASSES
 const PRIMARY_CLASS_CONFIGS = [
-    { name: 'PS - Petite Section', level: 'PS', subject: 'Maternelle', color: '#FFB6C1' },
-    { name: 'MS - Moyenne Section', level: 'MS', subject: 'Maternelle', color: '#FFD700' },
-    { name: 'GS - Grande Section', level: 'GS', subject: 'Maternelle', color: '#98FB98' },
-    { name: 'CP - Classe A', level: 'CP', subject: 'Polyvalent', color: '#FF6B6B' },
     { name: 'CE1 - Les explorateurs', level: 'CE1', subject: 'Français', color: '#4ECDC4' },
     { name: 'CE2 - Mathématiques', level: 'CE2', subject: 'Mathématiques', color: '#45B7D1' },
     { name: 'CM1 - Sciences', level: 'CM1', subject: 'Sciences', color: '#96CEB4' },
     { name: 'CM2 - Histoire-Géo', level: 'CM2', subject: 'Histoire', color: '#FFEAA7' },
 ];
 
-// Configurations pour professeur certifié (Secondaire)
+// Configurations pour professeur certifié (Secondaire) - RÉDUIT À 4 CLASSES
 const SECONDARY_CLASS_CONFIGS = [
-    { name: '6ème A - Mathématiques', level: '6ème', subject: 'Mathématiques', color: '#667EEA' },
-    { name: '5ème B - Français', level: '5ème', subject: 'Français', color: '#F093FB' },
-    { name: '4ème C - Histoire-Géo', level: '4ème', subject: 'Histoire-Géographie', color: '#4FACFE' },
-    { name: '3ème A - Sciences', level: '3ème', subject: 'SVT', color: '#43E97B' },
-    { name: '2nde 1 - Physique-Chimie', level: '2nde', subject: 'Physique-Chimie', color: '#FA709A' },
-    { name: '1ère S - Mathématiques', level: '1ère', subject: 'Mathématiques', color: '#FEE140' },
-    { name: 'Terminale - Philosophie', level: 'Terminale', subject: 'Philosophie', color: '#30CEFF' },
+    { name: '4ème A - Mathématiques', level: '4ème', subject: 'Mathématiques', color: '#667EEA' },
+    { name: '3ème B - Français', level: '3ème', subject: 'Français', color: '#F093FB' },
+    { name: '2nde 1 - Histoire-Géo', level: '2nde', subject: 'Histoire-Géographie', color: '#4FACFE' },
+    { name: '1ère S - Physique-Chimie', level: '1ère', subject: 'Physique-Chimie', color: '#FA709A' },
 ];
 
 // Matières pour primaire
@@ -82,6 +75,221 @@ const STUDENT_NOTES = [
     'Progrès constants depuis le début de l\'année',
     'Besoin de renforcer la confiance en soi',
 ];
+
+// Séquences par matière avec thèmes cohérents
+const SEQUENCES_BY_SUBJECT: Record<string, Array<{
+    name: string;
+    theme: string;
+    description: string;
+    objectives: string[];
+    sessionCount: number;
+    color: string;
+}>> = {
+    'Français': [
+        {
+            name: 'Le conte merveilleux',
+            theme: 'Littérature et imagination',
+            description: 'Étude des caractéristiques du conte merveilleux à travers différents textes',
+            objectives: [
+                'Identifier les caractéristiques du conte',
+                'Reconnaître la structure narrative',
+                'Produire un court conte'
+            ],
+            sessionCount: 8,
+            color: '#FF6B9D'
+        },
+        {
+            name: 'La conjugaison au passé',
+            theme: 'Grammaire - Les temps du passé',
+            description: 'Maîtrise de l\'imparfait et du passé composé',
+            objectives: [
+                'Conjuguer à l\'imparfait',
+                'Conjuguer au passé composé',
+                'Différencier les deux temps'
+            ],
+            sessionCount: 6,
+            color: '#C44569'
+        },
+        {
+            name: 'La poésie',
+            theme: 'Découverte de la poésie française',
+            description: 'Lecture et création de poèmes',
+            objectives: [
+                'Comprendre les rimes et le rythme',
+                'Réciter un poème',
+                'Créer ses propres vers'
+            ],
+            sessionCount: 5,
+            color: '#F8B500'
+        }
+    ],
+    'Mathématiques': [
+        {
+            name: 'Les fractions',
+            theme: 'Nombres et calculs',
+            description: 'Comprendre et manipuler les fractions',
+            objectives: [
+                'Représenter une fraction',
+                'Comparer des fractions',
+                'Additionner des fractions simples'
+            ],
+            sessionCount: 10,
+            color: '#4834DF'
+        },
+        {
+            name: 'La géométrie plane',
+            theme: 'Figures géométriques',
+            description: 'Étude des polygones et de leurs propriétés',
+            objectives: [
+                'Tracer des figures',
+                'Calculer des périmètres',
+                'Identifier les propriétés'
+            ],
+            sessionCount: 7,
+            color: '#30336B'
+        },
+        {
+            name: 'Problèmes et logique',
+            theme: 'Résolution de problèmes',
+            description: 'Développer le raisonnement mathématique',
+            objectives: [
+                'Comprendre un énoncé',
+                'Choisir la bonne opération',
+                'Vérifier sa réponse'
+            ],
+            sessionCount: 6,
+            color: '#686DE0'
+        }
+    ],
+    'Histoire': [
+        {
+            name: 'La Révolution française',
+            theme: 'De la monarchie à la République',
+            description: 'Les grands événements de 1789 à 1799',
+            objectives: [
+                'Connaître les dates clés',
+                'Comprendre les causes',
+                'Identifier les acteurs majeurs'
+            ],
+            sessionCount: 9,
+            color: '#E74C3C'
+        },
+        {
+            name: 'Le Moyen Âge',
+            theme: 'Société féodale et châteaux forts',
+            description: 'La vie au Moyen Âge en France',
+            objectives: [
+                'Décrire la société féodale',
+                'Comprendre le rôle des châteaux',
+                'Connaître la vie quotidienne'
+            ],
+            sessionCount: 8,
+            color: '#8E44AD'
+        },
+        {
+            name: 'Les grandes découvertes',
+            theme: 'Explorations du XVe et XVIe siècles',
+            description: 'Christophe Colomb et les explorateurs',
+            objectives: [
+                'Situer les voyages sur une carte',
+                'Comprendre les motivations',
+                'Mesurer les conséquences'
+            ],
+            sessionCount: 6,
+            color: '#F39C12'
+        }
+    ],
+    'Histoire-Géographie': [
+        {
+            name: 'La Première Guerre mondiale',
+            theme: 'Le conflit de 1914-1918',
+            description: 'Causes, déroulement et conséquences de la Grande Guerre',
+            objectives: [
+                'Connaître les causes du conflit',
+                'Décrire la vie dans les tranchées',
+                'Comprendre les traités de paix'
+            ],
+            sessionCount: 10,
+            color: '#E74C3C'
+        },
+        {
+            name: 'Les espaces productifs français',
+            theme: 'Géographie économique',
+            description: 'Agriculture, industrie et services en France',
+            objectives: [
+                'Localiser les zones agricoles',
+                'Identifier les pôles industriels',
+                'Comprendre les dynamiques territoriales'
+            ],
+            sessionCount: 7,
+            color: '#27AE60'
+        }
+    ],
+    'Sciences': [
+        {
+            name: 'Le cycle de l\'eau',
+            theme: 'Sciences de la Terre',
+            description: 'Comprendre le cycle naturel de l\'eau',
+            objectives: [
+                'Décrire les états de l\'eau',
+                'Expliquer l\'évaporation',
+                'Schématiser le cycle'
+            ],
+            sessionCount: 6,
+            color: '#3498DB'
+        },
+        {
+            name: 'Les êtres vivants',
+            theme: 'Biologie et classification',
+            description: 'Découverte du monde vivant et de sa diversité',
+            objectives: [
+                'Classer les êtres vivants',
+                'Comprendre la chaîne alimentaire',
+                'Observer et décrire'
+            ],
+            sessionCount: 8,
+            color: '#2ECC71'
+        },
+        {
+            name: 'L\'électricité',
+            theme: 'Physique - Les circuits',
+            description: 'Circuits simples et électricité',
+            objectives: [
+                'Réaliser un circuit simple',
+                'Identifier conducteurs et isolants',
+                'Comprendre le rôle des composants'
+            ],
+            sessionCount: 7,
+            color: '#F1C40F'
+        }
+    ],
+    'Physique-Chimie': [
+        {
+            name: 'Les atomes et molécules',
+            theme: 'Structure de la matière',
+            description: 'Introduction à la chimie atomique',
+            objectives: [
+                'Comprendre la structure atomique',
+                'Représenter des molécules',
+                'Identifier des éléments chimiques'
+            ],
+            sessionCount: 9,
+            color: '#9B59B6'
+        },
+        {
+            name: 'La mécanique',
+            theme: 'Forces et mouvements',
+            description: 'Étude des forces et du mouvement',
+            objectives: [
+                'Calculer une force',
+                'Comprendre le principe d\'inertie',
+                'Appliquer les lois de Newton'
+            ],
+            sessionCount: 8,
+            color: '#34495E'
+        }
+    ]
+};
 
 // Utilitaires
 const randomItem = <T,>(array: T[]): T => array[Math.floor(Math.random() * array.length)];
@@ -252,7 +460,42 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         }
         console.log(`  ✓ Created ${totalSessions} sessions`);
 
-        // 4. Générer les présences pour les séances passées
+        // 4. Créer les séquences par classe avec des thèmes cohérents
+        console.log('📚 Creating sequences...');
+        let totalSequences = 0;
+
+        for (const [index, classId] of classIds.entries()) {
+            const config = CLASS_CONFIGS[index];
+            const subject = config.subject;
+            
+            // Récupérer les séquences pour cette matière
+            const sequencesForSubject = SEQUENCES_BY_SUBJECT[subject] || [];
+            
+            if (sequencesForSubject.length > 0) {
+                // Créer 2-3 séquences par classe
+                const numSequences = Math.min(sequencesForSubject.length, randomInt(2, 3));
+                
+                for (let i = 0; i < numSequences; i++) {
+                    const seqData = sequencesForSubject[i];
+                    await sequenceService.create({
+                        classId,
+                        name: seqData.name,
+                        theme: seqData.theme,
+                        description: seqData.description,
+                        objectives: seqData.objectives,
+                        sessionCount: seqData.sessionCount,
+                        color: seqData.color,
+                    });
+                    totalSequences++;
+                }
+                console.log(`  ✓ Created ${numSequences} sequences for ${config.name}`);
+            } else {
+                console.log(`  ⚠️ No sequences defined for subject: ${subject}`);
+            }
+        }
+        console.log(`  ✓ Created ${totalSequences} sequences total`);
+
+        // 5. Générer les présences pour les séances passées
         console.log('✅ Generating attendances...');
         let totalAttendances = 0;
 
@@ -427,6 +670,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         console.log(`📊 Summary:`);
         console.log(`   - ${classIds.length} classes`);
         console.log(`   - ${totalStudents} students`);
+        console.log(`   - ${totalSequences} sequences`);
         console.log(`   - ${totalSessions} sessions`);
         console.log(`   - ${totalAttendances} attendances`);
         console.log(`   - ${allCompetences.length} competences`);
@@ -436,6 +680,7 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         return {
             classIds,
             totalStudents,
+            totalSequences,
             totalSessions,
             totalAttendances,
             totalCompetences: allCompetences.length,
