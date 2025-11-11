@@ -8,7 +8,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList, MainTabsParamList } from '../navigation/types';
 import { classService, sequenceService, sessionService } from '../services';
 import { Class, Sequence, Session } from '../types';
-import { SPACING } from '../utils';
+import { SPACING, getSchoolYear } from '../utils';
 import ClassFormDialog from '../components/ClassFormDialog';
 import SequenceFormDialog from '../components/SequenceFormDialog';
 
@@ -208,7 +208,7 @@ export default function HomeScreen({ navigation }: Props) {
             >
                 {/* Statistiques globales */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Vue d'ensemble</Text>
+                    <Text style={styles.sectionTitle}>Année scolaire {getSchoolYear()}</Text>
                     <View style={styles.statsGrid}>
                         <TouchableOpacity
                             style={[styles.statCard, { backgroundColor: '#4CAF50' }]}

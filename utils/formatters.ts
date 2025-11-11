@@ -45,3 +45,17 @@ export const getRelativeTime = (date: string | Date): string => {
   
   return formatDate(date);
 };
+
+export const getSchoolYear = (date: Date = new Date()): string => {
+  const month = date.getMonth(); // 0-11
+  const year = date.getFullYear();
+  
+  // L'année scolaire commence en septembre (mois 8)
+  if (month >= 8) {
+    // De septembre à décembre -> année actuelle / année suivante
+    return `${year}-${year + 1}`;
+  } else {
+    // De janvier à août -> année précédente / année actuelle
+    return `${year - 1}-${year}`;
+  }
+};
