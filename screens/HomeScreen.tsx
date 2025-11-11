@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Dimensions } from 'react-native';
 import { Text, ProgressBar } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { CompositeNavigationProp } from '@react-navigation/native';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/types';
+import { RootStackParamList, MainTabsParamList } from '../navigation/types';
 import { classService, sequenceService, sessionService } from '../services';
 import { Class, Sequence, Session } from '../types';
 import { SPACING } from '../utils';
@@ -12,7 +14,10 @@ import SequenceFormDialog from '../components/SequenceFormDialog';
 
 const { width } = Dimensions.get('window');
 
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type HomeScreenNavigationProp = CompositeNavigationProp<
+    BottomTabNavigationProp<MainTabsParamList, 'Home'>,
+    NativeStackNavigationProp<RootStackParamList>
+>;
 
 interface Props {
     navigation: HomeScreenNavigationProp;
@@ -178,10 +183,11 @@ export default function HomeScreen({ navigation }: Props) {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle="dark-content" />
 
             {/* Header */}
             <View style={styles.header}>
+                <MaterialCommunityIcons name="view-dashboard" size={28} color="#333" />
                 <View style={styles.headerContent}>
                     <Text style={styles.headerTitle}>Tableau de bord</Text>
                     <Text style={styles.headerSubtitle}>
@@ -193,12 +199,6 @@ export default function HomeScreen({ navigation }: Props) {
                         })}
                     </Text>
                 </View>
-                <TouchableOpacity
-                    style={styles.notificationButton}
-                    onPress={() => {/* TODO: Notifications */ }}
-                >
-                    <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
-                </TouchableOpacity>
             </View>
 
             <ScrollView
@@ -212,15 +212,9 @@ export default function HomeScreen({ navigation }: Props) {
                     <View style={styles.statsGrid}>
                         <TouchableOpacity
                             style={[styles.statCard, { backgroundColor: '#4CAF50' }]}
-                            onPress={() => {
-                                const parent = navigation.getParent();
-                                if (parent) {
-                                    parent.navigate('Classes' as never);
-                                }
-                            }}
+                            onPress={() => navigation.navigate('Classes')}
                             activeOpacity={0.7}
                         >
-                            <MaterialCommunityIcons name="google-classroom" size={32} color="#fff" />
                             <Text style={styles.statNumber}>{stats.totalClasses}</Text>
                             <Text style={styles.statLabel}>
                                 Classe{stats.totalClasses > 1 ? 's' : ''}
@@ -229,15 +223,9 @@ export default function HomeScreen({ navigation }: Props) {
 
                         <TouchableOpacity
                             style={[styles.statCard, { backgroundColor: '#2196F3' }]}
-                            onPress={() => {
-                                const parent = navigation.getParent();
-                                if (parent) {
-                                    parent.navigate('Sequences' as never);
-                                }
-                            }}
+                            onPress={() => navigation.navigate('Sequences')}
                             activeOpacity={0.7}
                         >
-                            <MaterialCommunityIcons name="book-open-variant" size={32} color="#fff" />
                             <Text style={styles.statNumber}>{stats.totalSequences}</Text>
                             <Text style={styles.statLabel}>
                                 Séquence{stats.totalSequences > 1 ? 's' : ''}
@@ -246,15 +234,9 @@ export default function HomeScreen({ navigation }: Props) {
 
                         <TouchableOpacity
                             style={[styles.statCard, { backgroundColor: '#FF9800' }]}
-                            onPress={() => {
-                                const parent = navigation.getParent();
-                                if (parent) {
-                                    parent.navigate('Sessions' as never);
-                                }
-                            }}
+                            onPress={() => navigation.navigate('Sessions')}
                             activeOpacity={0.7}
                         >
-                            <MaterialCommunityIcons name="calendar" size={32} color="#fff" />
                             <Text style={styles.statNumber}>{stats.totalSessions}</Text>
                             <Text style={styles.statLabel}>
                                 Séance{stats.totalSessions > 1 ? 's' : ''}
@@ -263,15 +245,9 @@ export default function HomeScreen({ navigation }: Props) {
 
                         <TouchableOpacity
                             style={[styles.statCard, { backgroundColor: '#9C27B0' }]}
-                            onPress={() => {
-                                const parent = navigation.getParent();
-                                if (parent) {
-                                    parent.navigate('Sessions' as never);
-                                }
-                            }}
+                            onPress={() => navigation.navigate('Sessions')}
                             activeOpacity={0.7}
                         >
-                            <MaterialCommunityIcons name="clock-outline" size={32} color="#fff" />
                             <Text style={styles.statNumber}>{stats.upcomingSessions}</Text>
                             <Text style={styles.statLabel}>À venir</Text>
                         </TouchableOpacity>
@@ -490,35 +466,29 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#FFFFFF',
         paddingTop: 60,
         paddingBottom: 20,
         paddingHorizontal: 20,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
     },
     headerContent: {
+        marginLeft: 15,
         flex: 1,
     },
     headerTitle: {
-        fontSize: 28,
+        fontSize: 26,
         fontWeight: '700',
-        color: '#FFFFFF',
+        color: '#333',
+        marginBottom: 4,
     },
     headerSubtitle: {
-        fontSize: 14,
-        color: 'rgba(255, 255, 255, 0.9)',
-        marginTop: 4,
+        fontSize: 15,
+        color: '#666',
         textTransform: 'capitalize',
-    },
-    notificationButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        alignItems: 'center',
-        justifyContent: 'center',
     },
     scrollView: {
         flex: 1,
@@ -601,7 +571,8 @@ const styles = StyleSheet.create({
     sessionCard: {
         flexDirection: 'row',
         backgroundColor: '#FFFFFF',
-        borderRadius: 12,
+        borderTopRightRadius: 12,
+        borderBottomRightRadius: 12,
         marginBottom: SPACING.xs,
         overflow: 'hidden',
         alignItems: 'center',
