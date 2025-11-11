@@ -467,14 +467,14 @@ export const seedDatabase = async (teacherType: TeacherType = 'primary') => {
         for (const [index, classId] of classIds.entries()) {
             const config = CLASS_CONFIGS[index];
             const subject = config.subject;
-            
+
             // Récupérer les séquences pour cette matière
             const sequencesForSubject = SEQUENCES_BY_SUBJECT[subject] || [];
-            
+
             if (sequencesForSubject.length > 0) {
                 // Créer 2-3 séquences par classe
                 const numSequences = Math.min(sequencesForSubject.length, randomInt(2, 3));
-                
+
                 for (let i = 0; i < numSequences; i++) {
                     const seqData = sequencesForSubject[i];
                     await sequenceService.create({

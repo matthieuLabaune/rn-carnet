@@ -210,35 +210,71 @@ export default function HomeScreen({ navigation }: Props) {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Vue d'ensemble</Text>
                     <View style={styles.statsGrid}>
-                        <View style={[styles.statCard, { backgroundColor: '#4CAF50' }]}>
+                        <TouchableOpacity
+                            style={[styles.statCard, { backgroundColor: '#4CAF50' }]}
+                            onPress={() => {
+                                const parent = navigation.getParent();
+                                if (parent) {
+                                    parent.navigate('Classes' as never);
+                                }
+                            }}
+                            activeOpacity={0.7}
+                        >
                             <MaterialCommunityIcons name="google-classroom" size={32} color="#fff" />
                             <Text style={styles.statNumber}>{stats.totalClasses}</Text>
                             <Text style={styles.statLabel}>
                                 Classe{stats.totalClasses > 1 ? 's' : ''}
                             </Text>
-                        </View>
+                        </TouchableOpacity>
 
-                        <View style={[styles.statCard, { backgroundColor: '#2196F3' }]}>
+                        <TouchableOpacity
+                            style={[styles.statCard, { backgroundColor: '#2196F3' }]}
+                            onPress={() => {
+                                const parent = navigation.getParent();
+                                if (parent) {
+                                    parent.navigate('Sequences' as never);
+                                }
+                            }}
+                            activeOpacity={0.7}
+                        >
                             <MaterialCommunityIcons name="book-open-variant" size={32} color="#fff" />
                             <Text style={styles.statNumber}>{stats.totalSequences}</Text>
                             <Text style={styles.statLabel}>
                                 Séquence{stats.totalSequences > 1 ? 's' : ''}
                             </Text>
-                        </View>
+                        </TouchableOpacity>
 
-                        <View style={[styles.statCard, { backgroundColor: '#FF9800' }]}>
+                        <TouchableOpacity
+                            style={[styles.statCard, { backgroundColor: '#FF9800' }]}
+                            onPress={() => {
+                                const parent = navigation.getParent();
+                                if (parent) {
+                                    parent.navigate('Sessions' as never);
+                                }
+                            }}
+                            activeOpacity={0.7}
+                        >
                             <MaterialCommunityIcons name="calendar" size={32} color="#fff" />
                             <Text style={styles.statNumber}>{stats.totalSessions}</Text>
                             <Text style={styles.statLabel}>
                                 Séance{stats.totalSessions > 1 ? 's' : ''}
                             </Text>
-                        </View>
+                        </TouchableOpacity>
 
-                        <View style={[styles.statCard, { backgroundColor: '#9C27B0' }]}>
+                        <TouchableOpacity
+                            style={[styles.statCard, { backgroundColor: '#9C27B0' }]}
+                            onPress={() => {
+                                const parent = navigation.getParent();
+                                if (parent) {
+                                    parent.navigate('Sessions' as never);
+                                }
+                            }}
+                            activeOpacity={0.7}
+                        >
                             <MaterialCommunityIcons name="clock-outline" size={32} color="#fff" />
                             <Text style={styles.statNumber}>{stats.upcomingSessions}</Text>
                             <Text style={styles.statLabel}>À venir</Text>
-                        </View>
+                        </TouchableOpacity>
                     </View>
                 </View>
 
