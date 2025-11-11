@@ -76,7 +76,7 @@ function MainTabs() {
                 options={{
                     tabBarLabel: 'Classes',
                     tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="google-classroom" size={size} color={color} />
+                        <MaterialCommunityIcons name="account-group" size={size} color={color} />
                     ),
                 }}
             />
