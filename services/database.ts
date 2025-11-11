@@ -181,6 +181,24 @@ export const initDatabase = async (): Promise<SQLite.SQLiteDatabase> => {
 
     CREATE INDEX IF NOT EXISTS idx_session_sequences_sequence_id ON session_sequences(sequence_id);
     CREATE INDEX IF NOT EXISTS idx_session_sequences_session_id ON session_sequences(session_id);
+
+    CREATE TABLE IF NOT EXISTS establishments (
+      id TEXT PRIMARY KEY NOT NULL,
+      name TEXT NOT NULL,
+      address TEXT,
+      city TEXT,
+      postal_code TEXT,
+      phone TEXT,
+      email TEXT,
+      uai TEXT UNIQUE,
+      type TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      CHECK (type IN ('ecole', 'college', 'lycee', 'lycee_professionnel', 'autre'))
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_establishments_uai ON establishments(uai);
+    CREATE INDEX IF NOT EXISTS idx_establishments_type ON establishments(type);
   `);
 
     // Migration: Ajouter les nouvelles colonnes si elles n'existent pas
@@ -234,6 +252,7 @@ export const resetDatabase = async (): Promise<void> => {
     DROP TABLE IF EXISTS schedule_slots;
     DROP TABLE IF EXISTS students;
     DROP TABLE IF EXISTS classes;
+    DROP TABLE IF EXISTS establishments;
   `);
     await closeDatabase();
     await initDatabase();

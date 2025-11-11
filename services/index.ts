@@ -11,3 +11,5 @@ export * from './settingsService';
 export * from './sequenceService';
 export * from './scheduleService';
 export * from './sessionGeneratorService';
+export * from './establishmentService';
+export * from './establishmentApi';

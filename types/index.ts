@@ -9,3 +9,4 @@ export * from './evaluationResult';
 export * from './schedule';
 export * from './holiday';
 export * from './sequence';
+export * from './establishment';
