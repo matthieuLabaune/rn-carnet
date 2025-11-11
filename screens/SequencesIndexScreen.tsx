@@ -147,15 +147,14 @@ export default function SequencesIndexScreen({ navigation, route }: Props) {
     };
 
     const handleViewModeChange = (mode: 'list' | 'calendar') => {
+        setViewMode(mode);
         if (mode === 'calendar' && allClasses.length > 0) {
-            // Naviguer vers l'écran SequencePlanning en mode timeline
-            navigation.navigate('SequencePlanning', {
+            // Naviguer directement vers l'écran de timeline
+            navigation.navigate('SequenceTimeline', {
                 classId: allClasses[0].id,
                 className: 'Toutes les classes',
                 classColor: '#007AFF',
             });
-        } else {
-            setViewMode(mode);
         }
     };
 
@@ -175,54 +174,47 @@ export default function SequencesIndexScreen({ navigation, route }: Props) {
 
     return (
         <View style={styles.container}>
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle="dark-content" />
 
             {/* Header */}
             <View style={styles.header}>
-                <View style={styles.headerTop}>
-                    <TouchableOpacity
-                        style={styles.backButton}
-                        onPress={() => navigation.goBack()}
-                    >
-                        <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
-                    </TouchableOpacity>
-                    <View style={styles.headerContent}>
-                        <Text style={styles.headerTitle}>Séquences Pédagogiques</Text>
-                        <Text style={styles.headerSubtitle}>
-                            {filteredSequences.length} séquence{filteredSequences.length !== 1 ? 's' : ''}
-                        </Text>
-                    </View>
+                <MaterialCommunityIcons name="book-open-page-variant" size={28} color="#333" />
+                <View style={styles.headerContent}>
+                    <Text style={styles.headerTitle}>Séquences Pédagogiques</Text>
+                    <Text style={styles.headerSubtitle}>
+                        {filteredSequences.length} séquence{filteredSequences.length !== 1 ? 's' : ''}
+                    </Text>
                 </View>
+            </View>
 
-                {/* Onglets de navigation */}
-                <View style={styles.tabsContainer}>
-                    <TouchableOpacity
-                        style={[styles.tab, viewMode === 'list' && styles.tabActive]}
-                        onPress={() => handleViewModeChange('list')}
-                    >
-                        <MaterialCommunityIcons
-                            name="format-list-bulleted"
-                            size={20}
-                            color={viewMode === 'list' ? '#007AFF' : 'rgba(255, 255, 255, 0.9)'}
-                        />
-                        <Text style={[styles.tabText, viewMode === 'list' && styles.tabTextActive]}>
-                            Liste
-                        </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        style={[styles.tab, viewMode === 'calendar' && styles.tabActive]}
-                        onPress={() => handleViewModeChange('calendar')}
-                    >
-                        <MaterialCommunityIcons
-                            name="calendar-month"
-                            size={20}
-                            color={viewMode === 'calendar' ? '#007AFF' : 'rgba(255, 255, 255, 0.9)'}
-                        />
-                        <Text style={[styles.tabText, viewMode === 'calendar' && styles.tabTextActive]}>
-                            Calendrier
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+            {/* Onglets de navigation */}
+            <View style={styles.tabsContainer}>
+                <TouchableOpacity
+                    style={[styles.tab, viewMode === 'list' && styles.tabActive]}
+                    onPress={() => handleViewModeChange('list')}
+                >
+                    <MaterialCommunityIcons
+                        name="format-list-bulleted"
+                        size={20}
+                        color={viewMode === 'list' ? '#007AFF' : '#999'}
+                    />
+                    <Text style={[styles.tabText, viewMode === 'list' && styles.tabTextActive]}>
+                        Liste
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.tab, viewMode === 'calendar' && styles.tabActive]}
+                    onPress={() => handleViewModeChange('calendar')}
+                >
+                    <MaterialCommunityIcons
+                        name="calendar-month"
+                        size={20}
+                        color={viewMode === 'calendar' ? '#007AFF' : '#999'}
+                    />
+                    <Text style={[styles.tabText, viewMode === 'calendar' && styles.tabTextActive]}>
+                        Calendrier
+                    </Text>
+                </TouchableOpacity>
             </View>
 
             {/* Barre de recherche */}
@@ -377,44 +369,35 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     header: {
-        backgroundColor: '#007AFF',
+        backgroundColor: '#FFFFFF',
         paddingTop: 60,
-        paddingBottom: 0,
-        borderBottomWidth: 0,
-    },
-    headerTop: {
+        paddingBottom: 20,
+        paddingHorizontal: 20,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 16,
-        paddingBottom: 12,
-    },
-    backButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginRight: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
     },
     headerContent: {
+        marginLeft: 15,
         flex: 1,
     },
     headerTitle: {
-        fontSize: 24,
+        fontSize: 26,
         fontWeight: '700',
-        color: '#FFFFFF',
+        color: '#333',
+        marginBottom: 4,
     },
     headerSubtitle: {
-        fontSize: 14,
-        color: 'rgba(255, 255, 255, 0.8)',
-        marginTop: 2,
+        fontSize: 15,
+        color: '#666',
     },
     tabsContainer: {
         flexDirection: 'row',
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: '#F5F5F5',
         borderRadius: 25,
         marginHorizontal: 16,
-        marginBottom: 16,
+        marginVertical: 12,
         padding: 4,
     },
     tab: {
@@ -433,7 +416,7 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 15,
         fontWeight: '600',
-        color: 'rgba(255, 255, 255, 0.9)',
+        color: '#999',
     },
     tabTextActive: {
         color: '#007AFF',
