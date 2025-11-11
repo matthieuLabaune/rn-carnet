@@ -233,6 +233,11 @@ export default function App() {
                                 component={SequenceTimelineScreen}
                                 options={{ headerShown: false }}
                             />
+                            <Stack.Screen
+                                name="Settings"
+                                component={SettingsScreen}
+                                options={{ headerShown: false }}
+                            />
                         </Stack.Navigator>
                     </NavigationContainer>
                 </SafeAreaProvider>

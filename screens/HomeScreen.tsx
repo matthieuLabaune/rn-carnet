@@ -398,7 +398,11 @@ export default function HomeScreen({ navigation }: Props) {
 
                 {/* Widget Réglages */}
                 <View style={styles.section}>
-                    <View style={styles.settingsWidget}>
+                    <TouchableOpacity
+                        style={styles.settingsWidget}
+                        onPress={() => navigation.navigate('Settings')}
+                        activeOpacity={0.7}
+                    >
                         <View style={styles.settingsContent}>
                             <View style={styles.settingsIcon}>
                                 <MaterialCommunityIcons name="cog" size={24} color="#666" />
@@ -406,12 +410,12 @@ export default function HomeScreen({ navigation }: Props) {
                             <View style={styles.settingsText}>
                                 <Text style={styles.settingsTitle}>Réglages</Text>
                                 <Text style={styles.settingsSubtitle}>
-                                    Utilisez l'onglet Réglages pour accéder aux paramètres
+                                    Préférences, thème et génération de données
                                 </Text>
                             </View>
                         </View>
                         <MaterialCommunityIcons name="chevron-right" size={24} color="#ccc" />
-                    </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Espace en bas */}
